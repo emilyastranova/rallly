@@ -4,7 +4,6 @@ import { Button } from "@rallly/ui/button";
 import { Card } from "@rallly/ui/card";
 import { CalendarIcon, LockIcon } from "lucide-react";
 import * as React from "react";
-import { createBreakpoint } from "react-use";
 import {
   EmptyState,
   EmptyStateDescription,
@@ -15,14 +14,11 @@ import {
 import { AddToCalendarButton } from "@/features/calendars/components/add-to-calendar-button";
 import { usePoll } from "@/features/poll/client";
 import DesktopPoll from "@/features/poll/components/desktop-poll";
-import MobilePoll from "@/features/poll/components/mobile-poll";
 import {
   EventDate,
   EventTimeRange,
 } from "@/features/scheduled-event/components/event-date-time";
 import { Trans } from "@/i18n/client";
-
-const useBreakpoint = createBreakpoint({ list: 320, table: 640 });
 
 function ScheduledDateTime({
   start,
@@ -57,9 +53,7 @@ function ScheduledDateTime({
 
 export function ResponsiveResults() {
   const poll = usePoll();
-  const breakpoint = useBreakpoint();
   const [dismissed, setDismissed] = React.useState(false);
-  const PollComponent = breakpoint === "table" ? DesktopPoll : MobilePoll;
 
   if (!dismissed && poll.status === "scheduled" && poll.event) {
     return (
@@ -122,5 +116,5 @@ export function ResponsiveResults() {
     );
   }
 
-  return <PollComponent />;
+  return <DesktopPoll />;
 }
