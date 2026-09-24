@@ -236,7 +236,7 @@ const DesktopPoll: React.FunctionComponent = () => {
 
   const { options } = useOptions();
   const user = useUser();
-  const [isAxesSwapped, setIsAxesSwapped] = React.useState<boolean>(false);
+  const [isAxesSwapped, setIsAxesSwapped] = React.useState<boolean>(true);
 
   const { participants } = useParticipants();
   const visibleParticipants = useVisibleParticipants();
@@ -441,9 +441,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                   title="Switch the X and Y axes of the schedule"
                 >
                   <ArrowLeftRightIcon className="size-3.5" />
-                  <span>
-                    {isAxesSwapped ? "Dates on Top" : "Swap X/Y Axes"}
-                  </span>
+                  <span>{isAxesSwapped ? "Dates on Top" : "Names on Top"}</span>
                 </Button>
               </div>
               <TableControls
@@ -503,7 +501,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                 maxWidth: 280,
                                 width: 280,
                               }}
-                              className="sticky top-0 left-0 z-30 h-36 border-border border-b bg-card px-3 py-2 text-left align-bottom"
+                              className="sticky top-0 left-0 z-30 h-44 border-border border-b bg-card px-3 py-2 text-left align-bottom"
                             >
                               <div className="flex flex-col gap-1 pb-1">
                                 <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
@@ -518,11 +516,11 @@ const DesktopPoll: React.FunctionComponent = () => {
                               </div>
                             </th>
                             {mode !== "view" ? (
-                              <th className="sticky top-0 z-20 h-36 min-w-[56px] max-w-[64px] overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom">
+                              <th className="sticky top-0 z-20 h-44 min-w-[52px] max-w-[60px] overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom">
                                 <div className="relative h-full w-full overflow-visible">
-                                  <div className="absolute bottom-3 left-4 flex w-44 origin-bottom-left -rotate-45 items-center gap-1.5 whitespace-nowrap text-left">
+                                  <div className="absolute bottom-3 left-4 flex w-44 origin-bottom-left rotate-[-60deg] items-center gap-1.5 whitespace-nowrap text-left">
                                     <YouAvatar />
-                                    <span className="max-w-[110px] truncate font-semibold text-primary text-xs">
+                                    <span className="max-w-[120px] truncate font-semibold text-primary text-xs">
                                       {mode === "new"
                                         ? t("you", { defaultValue: "You" })
                                         : (participants.find(
@@ -542,54 +540,73 @@ const DesktopPoll: React.FunctionComponent = () => {
                                 </div>
                               </th>
                             ) : null}
-                            {filteredParticipants.map((participant) => {
-                              const isEditingThis =
-                                mode === "edit" &&
-                                votingForm.watch("participantId") ===
-                                  participant.id;
-                              if (isEditingThis) return null;
-
-                              const isYou = user.ownsObject(participant);
-
-                              return (
-                                <th
-                                  key={participant.id}
-                                  className="sticky top-0 z-20 h-36 min-w-[56px] max-w-[64px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom"
-                                >
-                                  <div className="relative h-full w-full overflow-visible">
-                                    <div
-                                      className="absolute bottom-3 left-4 flex w-44 origin-bottom-left -rotate-45 items-center gap-1.5 whitespace-nowrap text-left"
-                                      title={participant.name}
-                                    >
-                                      <OptimizedAvatarImage
-                                        name={participant.name}
-                                        src={participant.image ?? undefined}
-                                        size="sm"
-                                      />
-                                      <span className="max-w-[110px] truncate font-medium text-foreground text-xs">
-                                        {participant.name}
+                            {participantSections.map((section) => (
+                              <React.Fragment key={section.groupKey}>
+                                {participantSections.length > 1 ||
+                                section.groupKey !== "ungrouped" ? (
+                                  <th
+                                    key={`sep-th-${section.groupKey}`}
+                                    className="sticky top-0 z-20 h-44 w-9 min-w-9 max-w-9 select-none border-border border-r border-b border-l bg-muted/70 p-1 align-bottom"
+                                  >
+                                    <div className="flex h-full flex-col items-center justify-end gap-1.5 pb-3">
+                                      <Badge
+                                        variant="outline"
+                                        className="h-4 px-1 py-0 font-semibold text-[9px]"
+                                      >
+                                        {section.participants.length}
+                                      </Badge>
+                                      <span className="rotate-180 whitespace-nowrap font-semibold text-foreground/80 text-xs tracking-tight [writing-mode:vertical-rl]">
+                                        {section.groupName}
                                       </span>
-                                      {participant.group?.name ? (
-                                        <Badge
-                                          variant="outline"
-                                          className="shrink-0 px-1 py-0 font-normal text-[9px]"
-                                        >
-                                          {participant.group.name}
-                                        </Badge>
-                                      ) : null}
-                                      {isYou ? (
-                                        <Badge
-                                          variant="secondary"
-                                          className="shrink-0 px-1 py-0 text-[9px]"
-                                        >
-                                          <Trans i18nKey="you" defaults="You" />
-                                        </Badge>
-                                      ) : null}
+                                      <Users2Icon className="size-3.5 shrink-0 text-primary" />
                                     </div>
-                                  </div>
-                                </th>
-                              );
-                            })}
+                                  </th>
+                                ) : null}
+                                {section.participants.map((participant) => {
+                                  const isEditingThis =
+                                    mode === "edit" &&
+                                    votingForm.watch("participantId") ===
+                                      participant.id;
+                                  if (isEditingThis) return null;
+
+                                  const isYou = user.ownsObject(participant);
+
+                                  return (
+                                    <th
+                                      key={participant.id}
+                                      className="sticky top-0 z-20 h-44 min-w-[52px] max-w-[60px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom"
+                                    >
+                                      <div className="relative h-full w-full overflow-visible">
+                                        <div
+                                          className="absolute bottom-3 left-4 flex w-44 origin-bottom-left rotate-[-60deg] items-center gap-1.5 whitespace-nowrap text-left"
+                                          title={participant.name}
+                                        >
+                                          <OptimizedAvatarImage
+                                            name={participant.name}
+                                            src={participant.image ?? undefined}
+                                            size="sm"
+                                          />
+                                          <span className="max-w-[130px] truncate font-medium text-foreground text-xs">
+                                            {participant.name}
+                                          </span>
+                                          {isYou ? (
+                                            <Badge
+                                              variant="secondary"
+                                              className="shrink-0 px-1 py-0 text-[9px]"
+                                            >
+                                              <Trans
+                                                i18nKey="you"
+                                                defaults="You"
+                                              />
+                                            </Badge>
+                                          ) : null}
+                                        </div>
+                                      </div>
+                                    </th>
+                                  );
+                                })}
+                              </React.Fragment>
+                            ))}
                           </tr>
                         </thead>
                         <tbody>
@@ -670,28 +687,39 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   </td>
                                 ) : null}
 
-                                {filteredParticipants.map((participant) => {
-                                  const isEditingThis =
-                                    mode === "edit" &&
-                                    votingForm.watch("participantId") ===
-                                      participant.id;
-                                  if (isEditingThis) return null;
+                                {participantSections.map((section) => (
+                                  <React.Fragment key={section.groupKey}>
+                                    {participantSections.length > 1 ||
+                                    section.groupKey !== "ungrouped" ? (
+                                      <td
+                                        key={`sep-td-${section.groupKey}`}
+                                        className="w-9 min-w-9 max-w-9 border-border/70 border-r border-b border-l bg-muted/30"
+                                      />
+                                    ) : null}
+                                    {section.participants.map((participant) => {
+                                      const isEditingThis =
+                                        mode === "edit" &&
+                                        votingForm.watch("participantId") ===
+                                          participant.id;
+                                      if (isEditingThis) return null;
 
-                                  const vote = participant.votes.find(
-                                    (v) => v.optionId === option.optionId,
-                                  )?.type;
+                                      const vote = participant.votes.find(
+                                        (v) => v.optionId === option.optionId,
+                                      )?.type;
 
-                                  return (
-                                    <td
-                                      key={participant.id}
-                                      className="h-12 border-border border-b border-l bg-card text-center"
-                                    >
-                                      <div className="flex items-center justify-center">
-                                        <VoteIcon type={vote} />
-                                      </div>
-                                    </td>
-                                  );
-                                })}
+                                      return (
+                                        <td
+                                          key={participant.id}
+                                          className="h-12 border-border border-b border-l bg-card text-center"
+                                        >
+                                          <div className="flex items-center justify-center">
+                                            <VoteIcon type={vote} />
+                                          </div>
+                                        </td>
+                                      );
+                                    })}
+                                  </React.Fragment>
+                                ))}
                               </tr>
                             );
                           })}
