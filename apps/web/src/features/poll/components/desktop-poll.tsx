@@ -367,7 +367,7 @@ const DesktopPoll: React.FunctionComponent = () => {
       const colLeft = col.offsetLeft;
       const colWidth = col.offsetWidth;
       const containerWidth = container.offsetWidth;
-      const stickyWidth = isAxesSwapped ? 260 : 340;
+      const stickyWidth = isAxesSwapped ? 165 : 340;
 
       const targetScroll =
         colLeft -
@@ -394,7 +394,7 @@ const DesktopPoll: React.FunctionComponent = () => {
     collapse();
   });
 
-  const scrollIncrement = isAxesSwapped ? 240 : 340;
+  const scrollIncrement = isAxesSwapped ? 160 : 340;
 
   const goToNextPage = React.useCallback(() => {
     setDidScroll(true);
@@ -534,7 +534,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                     aria-hidden="true"
                     className={cn(
                       "pointer-events-none absolute top-0 bottom-3 z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
-                      isAxesSwapped ? "left-[260px]" : "left-[340px]",
+                      isAxesSwapped ? "left-[165px]" : "left-[340px]",
                       x > 0 ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -562,17 +562,17 @@ const DesktopPoll: React.FunctionComponent = () => {
                             <th
                               rowSpan={2}
                               style={{
-                                minWidth: 260,
-                                maxWidth: 260,
-                                width: 260,
+                                minWidth: 165,
+                                maxWidth: 165,
+                                width: 165,
                               }}
-                              className="sticky top-0 left-0 z-40 border-border border-b bg-card px-3 py-2 text-left align-bottom"
+                              className="sticky top-0 left-0 z-40 border-border border-b bg-card px-2.5 py-1.5 text-left align-bottom"
                             >
-                              <div className="flex flex-col gap-1 pb-1">
+                              <div className="flex flex-col gap-0.5 pb-1">
                                 <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                                  Dates & Options
+                                  Dates & Times
                                 </span>
-                                <span className="font-normal text-[11px] text-muted-foreground">
+                                <span className="font-normal text-[10px] text-muted-foreground">
                                   {filteredParticipants.length}{" "}
                                   {filteredParticipants.length === 1
                                     ? "participant"
@@ -583,13 +583,13 @@ const DesktopPoll: React.FunctionComponent = () => {
                             {mode === "new" ? (
                               <th
                                 rowSpan={2}
-                                className="sticky top-0 z-35 h-48 w-16 min-w-16 max-w-16 overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom"
+                                className="sticky top-0 z-35 h-48 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom"
                               >
                                 <div className="relative h-full w-full overflow-visible">
                                   <div
                                     className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                     style={{
-                                      left: "20px",
+                                      left: "14px",
                                       transformOrigin: "12px 12px",
                                       transform: "rotate(-60deg)",
                                     }}
@@ -650,7 +650,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       isEditingThis ? editingColRef : undefined
                                     }
                                     className={cn(
-                                      "sticky top-7 z-25 h-44 w-16 min-w-16 max-w-16 overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
+                                      "sticky top-7 z-25 h-44 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
                                       isEditingThis &&
                                         "border-primary bg-primary/10",
                                     )}
@@ -659,7 +659,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       <div
                                         className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                         style={{
-                                          left: "20px",
+                                          left: "14px",
                                           transformOrigin: "12px 12px",
                                           transform: "rotate(-60deg)",
                                         }}
@@ -741,13 +741,13 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   <tr key={option.optionId} className="group">
                                     <td
                                       style={{
-                                        minWidth: 260,
-                                        maxWidth: 260,
-                                        width: 260,
+                                        minWidth: 165,
+                                        maxWidth: 165,
+                                        width: 165,
                                       }}
-                                      className="sticky left-0 z-10 border-border border-b bg-card px-3 py-2"
+                                      className="sticky left-0 z-10 border-border border-b bg-card px-2.5 py-1.5"
                                     >
-                                      <div className="flex items-center justify-between gap-2">
+                                      <div className="flex items-center justify-between gap-1.5">
                                         <div className="flex min-w-0 flex-col">
                                           {option.title ? (
                                             <span className="truncate font-semibold text-foreground text-xs">
@@ -781,7 +781,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                     </td>
 
                                     {mode === "new" ? (
-                                      <td className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center">
+                                      <td className="h-12 w-[52px] min-w-[52px] max-w-[52px] border-primary/30 border-b border-l bg-primary/5 text-center">
                                         <div className="flex items-center justify-center p-1">
                                           {voteIndex !== -1 ? (
                                             <Controller
@@ -817,7 +817,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       return isEditingThis ? (
                                         <td
                                           key={participant.id}
-                                          className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center"
+                                          className="h-12 w-[52px] min-w-[52px] max-w-[52px] border-primary/30 border-b border-l bg-primary/5 text-center"
                                         >
                                           <div className="flex items-center justify-center p-1">
                                             {voteIndex !== -1 ? (
@@ -843,7 +843,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       ) : (
                                         <td
                                           key={participant.id}
-                                          className="h-12 border-border border-b border-l bg-card text-center"
+                                          className="h-12 w-[52px] min-w-[52px] max-w-[52px] border-border border-b border-l bg-card text-center"
                                         >
                                           <div className="flex items-center justify-center">
                                             <VoteIcon type={vote} />
