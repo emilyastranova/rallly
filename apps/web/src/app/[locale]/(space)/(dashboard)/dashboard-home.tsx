@@ -1,4 +1,7 @@
+import { Badge } from "@rallly/ui/badge";
+import { Card } from "@rallly/ui/card";
 import { Tile, TileDescription, TileGrid, TileTitle } from "@rallly/ui/tile";
+import { CalendarIcon, PinIcon, UsersIcon } from "lucide-react";
 import { Trans } from "react-i18next/TransWithoutContext";
 import { HoverPrefetchLink } from "@/components/hover-prefetch-link";
 import {
@@ -20,6 +23,18 @@ import { getTranslation } from "@/i18n/server";
 import { isFeatureEnabled } from "@/lib/feature-flags/server";
 import { PasswordSetupAlert } from "./password-setup-alert";
 
+interface PinnedPollItem {
+  id: string;
+  title: string;
+  status: string;
+  kind: string;
+  options: Array<{ id: string; startTime: Date; duration: number }>;
+  _count: {
+    participants: number;
+    comments: number;
+  };
+}
+
 export async function DashboardHome({
   openPollCount,
   upcomingEventCount,
@@ -28,6 +43,7 @@ export async function DashboardHome({
   hasNoAccounts,
   canManageBilling,
   canManageMembers,
+  pinnedPolls = [],
 }: {
   openPollCount: number;
   upcomingEventCount: number;
@@ -36,6 +52,7 @@ export async function DashboardHome({
   hasNoAccounts: boolean;
   canManageBilling: boolean;
   canManageMembers: boolean;
+  pinnedPolls?: PinnedPollItem[];
 }) {
   const { t, i18n } = await getTranslation();
 
@@ -52,6 +69,57 @@ export async function DashboardHome({
         {hasNoAccounts && isFeatureEnabled("emailLogin") ? (
           <PasswordSetupAlert />
         ) : null}
+
+        {pinnedPolls && pinnedPolls.length > 0 ? (
+          <div className="space-y-3">
+            <h2 className="flex items-center gap-1.5 font-medium text-foreground text-sm">
+              <PinIcon className="size-4 fill-primary text-primary" />
+              <span>Pinned Polls & Bookmarks</span>
+            </h2>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {pinnedPolls.map((poll) => (
+                <Card
+                  key={poll.id}
+                  className="group relative overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm"
+                >
+                  <HoverPrefetchLink
+                    href={`/poll/${poll.id}`}
+                    className="block p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <PinIcon className="size-3.5 shrink-0 fill-primary text-primary" />
+                          <h3 className="truncate font-semibold text-foreground text-sm group-hover:text-primary">
+                            {poll.title}
+                          </h3>
+                        </div>
+                        <div className="mt-2.5 flex items-center gap-3 text-muted-foreground text-xs">
+                          <span className="flex items-center gap-1">
+                            <UsersIcon className="size-3.5" />
+                            {poll._count.participants}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="size-3.5" />
+                            {poll.options.length}{" "}
+                            {poll.options.length === 1 ? "option" : "options"}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="px-1.5 py-0 text-[10px] capitalize"
+                          >
+                            {poll.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </HoverPrefetchLink>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <div className="space-y-4">
           <h2 className="text-muted-foreground text-sm">
             <Trans

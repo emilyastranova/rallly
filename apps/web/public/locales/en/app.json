@@ -984,6 +984,8 @@
   "userCount": "{count, number, ::compact-short}",
   "userRegistration": "User registration",
   "userRegistrationDescription": "Allow new users to register an account.",
+  "restrictSpaceCreation": "Restrict space creation to admins",
+  "restrictSpaceCreationDescription": "Only instance administrators can create new spaces. Regular users will access the default space.",
   "userRoleAdmin": "Admins",
   "userRoleAll": "All",
   "userRoleUser": "Users",

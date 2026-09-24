@@ -714,6 +714,7 @@ export async function getPollDetails({
       hideScores: true,
       requireParticipantEmail: true,
       muted: true,
+      pinned: true,
       userId: true,
       spaceId: true,
       deleted: true,
@@ -854,5 +855,34 @@ export async function listPollComments({
       createdAt: true,
     },
     orderBy: [{ createdAt: "asc" }],
+  });
+}
+
+export async function listPinnedPolls({ spaceId }: { spaceId: string }) {
+  return prisma.poll.findMany({
+    where: {
+      spaceId,
+      pinned: true,
+      deleted: false,
+    },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      kind: true,
+      createdAt: true,
+      options: {
+        select: { id: true, startTime: true, duration: true },
+      },
+      _count: {
+        select: {
+          participants: true,
+          comments: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 }

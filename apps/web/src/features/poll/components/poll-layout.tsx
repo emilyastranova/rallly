@@ -14,6 +14,7 @@ import { Link } from "@/components/link";
 import { usePoll } from "@/features/poll/client";
 import ManagePoll from "@/features/poll/components/manage-poll";
 import { NotificationToggle } from "@/features/poll/components/notification-toggle";
+import { PinPollButton } from "@/features/poll/components/pin-poll-button";
 import { LegacyPollContextProvider } from "@/features/poll/components/poll-context-provider";
 import { ShareDialog } from "@/features/poll/components/share-dialog";
 import { Trans } from "@/i18n/client";
@@ -21,6 +22,7 @@ import { Trans } from "@/i18n/client";
 const AdminControls = () => {
   return (
     <div className="flex items-center gap-x-2">
+      <PinPollButton />
       <NotificationToggle />
       <ManagePoll />
       <ShareDialog />

@@ -33,6 +33,8 @@ export function InstanceSettingsForm({
   const [disableUserRegistration, setDisableUserRegistration] = React.useState(
     !isRegistrationEnabled || Boolean(defaultValue.disableUserRegistration),
   );
+  const [restrictSpaceCreationToAdmins, setRestrictSpaceCreationToAdmins] =
+    React.useState(Boolean(defaultValue.restrictSpaceCreationToAdmins));
 
   const updateInstanceSettings = useSafeAction(updateInstanceSettingsAction);
   const { t } = useTranslation();
@@ -43,6 +45,20 @@ export function InstanceSettingsForm({
     toast.promise(
       updateInstanceSettings.executeAsync({
         disableUserRegistration: disabled,
+      }),
+      {
+        loading: t("saving", { defaultValue: "Saving..." }),
+        success: t("saved", { defaultValue: "Saved" }),
+        error: t("unexpectedError", { defaultValue: "Unexpected error" }),
+      },
+    );
+  };
+
+  const handleRestrictSpaceCreationChange = (restricted: boolean) => {
+    setRestrictSpaceCreationToAdmins(restricted);
+    toast.promise(
+      updateInstanceSettings.executeAsync({
+        restrictSpaceCreationToAdmins: restricted,
       }),
       {
         loading: t("saving", { defaultValue: "Saving..." }),
@@ -104,6 +120,42 @@ export function InstanceSettingsForm({
             </AlertDescription>
           </Alert>
         )}
+      </Field>
+      <Field>
+        <Field orientation="responsive">
+          <FieldContent>
+            <FieldLabel htmlFor="restrictSpaceCreation">
+              <Trans
+                i18nKey="restrictSpaceCreation"
+                defaults="Restrict space creation to admins"
+              />
+            </FieldLabel>
+            <FieldDescription>
+              <Trans
+                i18nKey="restrictSpaceCreationDescription"
+                defaults="Only instance administrators can create new spaces. Regular users will access the default space."
+              />
+            </FieldDescription>
+          </FieldContent>
+          <Select
+            value={
+              restrictSpaceCreationToAdmins ? "restricted" : "unrestricted"
+            }
+            onValueChange={(value) => {
+              if (value) {
+                handleRestrictSpaceCreationChange(value === "restricted");
+              }
+            }}
+          >
+            <SelectTrigger id="restrictSpaceCreation" className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="unrestricted">All Users</SelectItem>
+              <SelectItem value="restricted">Admins Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
       </Field>
     </FieldGroup>
   );

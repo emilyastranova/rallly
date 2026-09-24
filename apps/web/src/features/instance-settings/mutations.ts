@@ -8,6 +8,7 @@ import type { BrandingLogoType, FooterLink } from "./schema";
 
 export async function updateInstanceSettings(data: {
   disableUserRegistration?: boolean;
+  restrictSpaceCreationToAdmins?: boolean;
   appName?: string;
   primaryColor?: string;
   primaryColorDark?: string;

@@ -10,6 +10,7 @@ import {
   getPollDetails,
   getPollStatusCounts,
   listParticipantIdsByToken,
+  listPinnedPolls,
   listPollComments,
   listPollParticipants,
 } from "@/features/poll/data";
@@ -131,3 +132,9 @@ export const loadAdminPoll = cache(async (pollId: string) => {
     user,
   };
 });
+
+export const loadPinnedPolls = cache(
+  async ({ spaceId }: { spaceId: string }) => {
+    return listPinnedPolls({ spaceId });
+  },
+);

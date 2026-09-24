@@ -5,6 +5,7 @@ import { prisma } from "@rallly/database";
 import { createMiddleware } from "next-safe-action";
 import * as z from "zod";
 import { getInstancePolicy } from "@/features/instance-policy/data";
+import { getInstanceSettings } from "@/features/instance-settings/data";
 import { spaceIconAssetProfile } from "@/features/space/constants";
 import { getActiveSpaceForUser } from "@/features/space/data";
 import { defineAbilityForMember } from "@/features/space/member/ability";
@@ -104,6 +105,18 @@ export const createSpaceAction = authActionClient
   .use(createRateLimitMiddleware(5, "1 m"))
   .inputSchema(createSpaceSchema)
   .action(async ({ ctx, parsedInput }) => {
+    const instanceSettings = await getInstanceSettings();
+    const isRestricted =
+      process.env.RESTRICT_SPACE_CREATION_TO_ADMINS === "true" ||
+      Boolean(instanceSettings.restrictSpaceCreationToAdmins);
+
+    if (isRestricted && ctx.user.role !== "admin") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Only instance administrators can create new spaces.",
+      });
+    }
+
     const space = await createSpace({
       name: parsedInput.name,
       ownerId: ctx.user.id,

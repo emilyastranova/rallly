@@ -34,6 +34,7 @@ export const getInstanceSettings = unstable_cache(
       select: {
         instanceId: true,
         disableUserRegistration: true,
+        restrictSpaceCreationToAdmins: true,
         appName: true,
         primaryColor: true,
         primaryColorDark: true,
@@ -49,6 +50,8 @@ export const getInstanceSettings = unstable_cache(
       instanceId: instanceSettings?.instanceId ?? null,
       disableUserRegistration:
         instanceSettings?.disableUserRegistration ?? false,
+      restrictSpaceCreationToAdmins:
+        instanceSettings?.restrictSpaceCreationToAdmins ?? false,
       appName: instanceSettings?.appName ?? null,
       primaryColor: instanceSettings?.primaryColor ?? null,
       primaryColorDark: instanceSettings?.primaryColorDark ?? null,

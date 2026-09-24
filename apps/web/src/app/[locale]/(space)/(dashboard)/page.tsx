@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { loadPollStatusCounts } from "@/features/poll/loaders";
+import { loadPinnedPolls, loadPollStatusCounts } from "@/features/poll/loaders";
 import {
   loadActiveSpace,
   loadUpcomingEventCount,
@@ -10,14 +10,20 @@ import { getTranslation } from "@/i18n/server";
 import { DashboardHome } from "./dashboard-home";
 
 export default async function Page() {
-  const [user, space, pollStatusCounts, upcomingEventCount, hasNoAccounts] =
-    await Promise.all([
-      loadUser(),
-      loadActiveSpace(),
-      loadPollStatusCounts(),
-      loadUpcomingEventCount(),
-      loadUserHasNoAccounts(),
-    ]);
+  const space = await loadActiveSpace();
+  const [
+    user,
+    pollStatusCounts,
+    upcomingEventCount,
+    hasNoAccounts,
+    pinnedPolls,
+  ] = await Promise.all([
+    loadUser(),
+    loadPollStatusCounts(),
+    loadUpcomingEventCount(),
+    loadUserHasNoAccounts(),
+    loadPinnedPolls({ spaceId: space.id }),
+  ]);
 
   const ability = defineAbilityForMember({ user: { id: user.id }, space });
 
@@ -30,6 +36,7 @@ export default async function Page() {
       hasNoAccounts={hasNoAccounts}
       canManageBilling={ability.can("manage", "Billing")}
       canManageMembers={space.role === "admin"}
+      pinnedPolls={pinnedPolls}
     />
   );
 }

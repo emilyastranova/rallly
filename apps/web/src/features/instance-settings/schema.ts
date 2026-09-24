@@ -3,6 +3,7 @@ import { brandingLogoAssetProfile } from "./constants";
 
 export const instanceSettingsSchema = z.object({
   disableUserRegistration: z.boolean(),
+  restrictSpaceCreationToAdmins: z.boolean().default(false),
 });
 
 export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;

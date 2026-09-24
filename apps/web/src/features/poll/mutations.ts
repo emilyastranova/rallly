@@ -426,3 +426,16 @@ export function revalidatePollPages() {
   revalidatePath("/[locale]/invite/[urlId]", "page");
   revalidatePath("/[locale]/(optional-space)/poll/[urlId]", "layout");
 }
+
+export async function togglePollPinned({
+  pollId,
+  pinned,
+}: {
+  pollId: string;
+  pinned: boolean;
+}) {
+  return prisma.poll.update({
+    where: { id: pollId },
+    data: { pinned },
+  });
+}

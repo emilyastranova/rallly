@@ -21,6 +21,7 @@ export type PollDetails = {
   hideScores: boolean;
   requireParticipantEmail: boolean;
   muted: boolean;
+  pinned: boolean;
   timeZone: string | null;
   userId: string | null;
   spaceId: string | null;

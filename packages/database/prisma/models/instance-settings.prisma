@@ -2,6 +2,7 @@ model InstanceSettings {
   id                      Int     @id @default(1)
   // Authentication & Security
   disableUserRegistration Boolean @default(false) @map("disable_user_registration")
+  restrictSpaceCreationToAdmins Boolean @default(false) @map("restrict_space_creation_to_admins")
 
   // Anonymous identifier used when the instance checks for updates
   instanceId String @unique @default(dbgenerated("gen_random_uuid()")) @map("instance_id") @db.Uuid

@@ -16,7 +16,7 @@ export const updateInstanceSettingsAction = adminActionClient
   .metadata({
     actionName: "update_instance_settings",
   })
-  .inputSchema(instanceSettingsSchema)
+  .inputSchema(instanceSettingsSchema.partial())
   .action(async ({ parsedInput }) => {
     await updateInstanceSettings(parsedInput);
   });

@@ -59,6 +59,7 @@ model Poll {
   ifNeedBeLabel           String?           @map("if_need_be_label")
   noLabel                 String?           @map("no_label")
   muted                   Boolean           @default(false)
+  pinned                  Boolean           @default(false)
 
   user           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   scheduledEvent ScheduledEvent? @relation(fields: [scheduledEventId], references: [id], onDelete: SetNull)

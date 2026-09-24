@@ -1,6 +1,8 @@
 "use server";
 
-import { setPollMuted } from "@/features/poll/mutations";
+import { revalidatePath } from "next/cache";
+import * as z from "zod";
+import { setPollMuted, togglePollPinned } from "@/features/poll/mutations";
 import { setPollMutedSchema } from "@/features/poll/schema";
 import { identifyGroup } from "@/lib/posthog";
 import { authActionClient } from "@/lib/safe-action/server";
@@ -28,4 +30,26 @@ export const setPollMutedAction = authActionClient
     }
 
     return result;
+  });
+
+export const togglePollPinnedAction = authActionClient
+  .metadata({ actionName: "toggle_poll_pinned" })
+  .inputSchema(
+    z.object({
+      pollId: z.string(),
+      pinned: z.boolean(),
+    }),
+  )
+  .action(async ({ parsedInput }) => {
+    const { pollId, pinned } = parsedInput;
+
+    await togglePollPinned({
+      pollId,
+      pinned,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/polls");
+    revalidatePath(`/poll/${pollId}`);
+    return { ok: true, pinned };
   });
