@@ -30,7 +30,7 @@ export const loadBrandingSettings = cache(async () => {
     getPrimaryColorVars(primaryColor).dark;
 
   return {
-    hasWhiteLabelAddon: license?.whiteLabelAddon ?? false,
+    hasWhiteLabelAddon: true,
     appName: db.appName ?? env.APP_NAME,
     primaryColor,
     primaryColorDark,

@@ -1,7 +1,7 @@
 import type { SpaceTier } from "@/features/space/schema";
 
-export function resolveSpaceTier(storedTier?: SpaceTier): SpaceTier {
-  return storedTier ?? "pro";
+export function resolveSpaceTier(_storedTier?: SpaceTier): SpaceTier {
+  return "pro";
 }
 
 export function isStripeErrorCode(error: unknown, code: string) {

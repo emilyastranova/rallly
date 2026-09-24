@@ -273,7 +273,7 @@ describe("API v1 - /polls", () => {
   });
 
   describe("Pro tier enforcement", () => {
-    it("should return 403 with SPACE_NOT_PRO when the space is not pro", async () => {
+    it("should allow API access when the space has hobby tier in libre edition", async () => {
       const hobbyApiKey = {
         ...mockApiKey,
         space: { ...mockApiKey.space, tier: "hobby" },
@@ -293,35 +293,7 @@ describe("API v1 - /polls", () => {
         }),
       });
 
-      expect(res.status).toBe(403);
-      const json = await res.json();
-      expect(json.error.code).toBe("SPACE_NOT_PRO");
-    });
-
-    it("should not schedule a lastUsedAt write when the space is not pro", async () => {
-      const hobbyApiKey = {
-        ...mockApiKey,
-        hashedKey: hashApiKey(testApiKey),
-        lastUsedAt: null,
-        space: { ...mockApiKey.space, tier: "hobby" },
-      };
-      vi.mocked(prisma.spaceApiKey.findMany).mockResolvedValue([hobbyApiKey]);
-
-      const res = await app.request("/v1/polls", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${testApiKey}`,
-        },
-        body: JSON.stringify({
-          title: "Test Poll",
-          kind: "date",
-          options: [{ date: "2025-01-15" }],
-        }),
-      });
-
-      expect(res.status).toBe(403);
-      expect(after).not.toHaveBeenCalled();
+      expect(res.status).toBe(201);
     });
 
     it("should return 200 with a valid key when the space is pro", async () => {

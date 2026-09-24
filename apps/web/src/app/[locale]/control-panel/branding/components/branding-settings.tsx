@@ -6,7 +6,7 @@ import {
   FieldLabel,
   FieldTitle,
 } from "@rallly/ui/field";
-import { CodeIcon, ContainerIcon, GemIcon, HardDriveIcon } from "lucide-react";
+import { CodeIcon, ContainerIcon, HardDriveIcon } from "lucide-react";
 import { Trans } from "react-i18next/TransWithoutContext";
 import {
   PageSection,
@@ -116,36 +116,6 @@ export async function BrandingSettings() {
 
   return (
     <>
-      {!hasWhiteLabelAddon ? (
-        <Alert variant="primary">
-          <GemIcon />
-          <AlertDescription>
-            <Trans
-              t={t}
-              i18n={i18n}
-              ns="app"
-              i18nKey="customBrandingAlertDescription"
-              defaults="Custom branding is available to Enterprise license holders as a paid add-on."
-            />
-          </AlertDescription>
-          <AlertAction>
-            <a
-              href="https://support.rallly.co/self-hosting/white-labeling"
-              target="_blank"
-              className="underline"
-              rel="noreferrer"
-            >
-              <Trans
-                t={t}
-                i18n={i18n}
-                ns="app"
-                i18nKey="learnMore"
-                defaults="Learn more"
-              />
-            </a>
-          </AlertAction>
-        </Alert>
-      ) : null}
       <PageSectionGroup>
         <PageSection variant="card">
           <PageSectionHeader>

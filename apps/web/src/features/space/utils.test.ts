@@ -41,14 +41,14 @@ describe("isSpaceBrandingActive", () => {
     ).toBe(true);
   });
 
-  it("ignores a stored colour once the space is on hobby", () => {
+  it("allows stored colour for all spaces in libre edition", () => {
     expect(
       isSpaceBrandingActive({
         tier: "hobby",
         showBranding: true,
         spaceBrandingAllowed: true,
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("respects the switch being off", () => {
@@ -83,14 +83,14 @@ describe("isSpaceAttributionHidden", () => {
     ).toBe(true);
   });
 
-  it("ignores the stored setting once the space is on hobby", () => {
+  it("allows attribution removal for all spaces in libre edition", () => {
     expect(
       isSpaceAttributionHidden({
         tier: "hobby",
         hideAttribution: true,
         spaceAttributionConfigurable: true,
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("respects the switch being off", () => {
