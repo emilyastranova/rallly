@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
+import { getActiveSpaceForUser } from "@/features/space/data";
+import { AppError } from "@/lib/errors/app-error";
 import { authActionClient } from "@/lib/safe-action/server";
 import { createGroup, deleteGroup, updateUserGroups } from "./mutations";
 
@@ -58,6 +60,42 @@ export const updateUserGroupsAction = authActionClient
       groupIds: parsedInput.groupIds,
     });
 
+    revalidatePath("/settings/profile");
+    return { success: true };
+  });
+
+export const adminAssignUserGroupsAction = authActionClient
+  .metadata({ actionName: "admin_assign_user_groups" })
+  .inputSchema(
+    z.object({
+      targetUserId: z.string(),
+      primaryGroupId: z.string().nullable().optional(),
+      groupIds: z.array(z.string()).default([]),
+      spaceId: z.string().optional(),
+    }),
+  )
+  .action(async ({ ctx, parsedInput }) => {
+    if (parsedInput.spaceId) {
+      const activeSpace = await getActiveSpaceForUser(ctx.user.id);
+      const isSpaceAdmin =
+        activeSpace?.id === parsedInput.spaceId && activeSpace.role === "admin";
+      const isInstanceAdmin = ctx.user.role === "admin";
+      if (!isSpaceAdmin && !isInstanceAdmin) {
+        throw new AppError({
+          code: "FORBIDDEN",
+          message: "Only space admins can assign members to groups",
+        });
+      }
+    }
+
+    await updateUserGroups({
+      userId: parsedInput.targetUserId,
+      primaryGroupId: parsedInput.primaryGroupId,
+      groupIds: parsedInput.groupIds,
+    });
+
+    revalidatePath("/settings/groups");
+    revalidatePath("/members");
     revalidatePath("/settings/profile");
     return { success: true };
   });

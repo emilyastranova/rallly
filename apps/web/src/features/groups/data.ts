@@ -47,3 +47,39 @@ export async function getUserGroups({ userId }: { userId: string }) {
     groups: user?.groups ?? [],
   };
 }
+
+export async function listSpaceMembersWithGroups({
+  spaceId,
+}: {
+  spaceId: string;
+}) {
+  const members = await prisma.spaceMember.findMany({
+    where: { spaceId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          primaryGroupId: true,
+          primaryGroup: {
+            select: { id: true, name: true },
+          },
+          groups: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+    orderBy: {
+      user: { name: "asc" },
+    },
+  });
+
+  return members.map((m) => ({
+    memberId: m.id,
+    role: m.role,
+    user: m.user,
+  }));
+}
