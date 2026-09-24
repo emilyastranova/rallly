@@ -41,9 +41,11 @@ export type ParsedDateTimeOpton = ParsedDateOption | ParsedTimeSlotOption;
 
 export const getOptionDateTimeLabel = (option: ParsedDateTimeOpton) => {
   const date = `${option.dow} ${option.day} ${option.month} ${option.year}`;
-  return option.type === "timeSlot"
-    ? `${date}, ${option.startTime} – ${option.endTime}`
-    : date;
+  const base =
+    option.type === "timeSlot"
+      ? `${date}, ${option.startTime} – ${option.endTime}`
+      : date;
+  return option.title ? `${option.title} (${base})` : base;
 };
 
 export const removeAllOptionsForDay = (

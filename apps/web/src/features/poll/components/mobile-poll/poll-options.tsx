@@ -90,6 +90,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                         dow={option.dow}
                         day={option.day}
                         month={option.month}
+                        title={option.title}
                         editable={editable}
                         selectedParticipantId={selectedParticipant?.id}
                       />

@@ -7,22 +7,29 @@ export interface DateOptionProps extends PollOptionProps {
   dow: string;
   day: string;
   month: string;
+  title?: string | null;
 }
 
 const DateOption: React.FunctionComponent<DateOptionProps> = ({
   dow,
   day,
+  title,
   ...rest
 }) => {
   return (
     <PollOption {...rest}>
-      {/**
-       * Intentionally using the month prop for the day of week here as a temporary measure
-       * until we update this component.
-       */}
-      <div className="text-sm">
-        {day} {dow}
-      </div>
+      {title ? (
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground text-sm">{title}</span>
+          <span className="text-muted-foreground text-xs">
+            {day} {dow}
+          </span>
+        </div>
+      ) : (
+        <div className="text-sm">
+          {day} {dow}
+        </div>
+      )}
     </PollOption>
   );
 };

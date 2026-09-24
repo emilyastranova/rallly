@@ -104,9 +104,13 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
       onChangeDuration(0);
       form.setValue("timeZone", "");
       onChange(
-        datepicker.selection.map((date) => ({
+        options.map((option) => ({
           type: "date",
-          date: formatDateWithoutTime(date),
+          date:
+            option.type === "date"
+              ? option.date
+              : formatDateWithoutTime(new Date(option.start)),
+          title: option.title,
         })),
       );
       return;
@@ -131,6 +135,7 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
           end: formatDateWithoutTz(
             dayjs(startDate).add(minutes, "minutes").toDate(),
           ),
+          title: option.title,
         };
       }),
     );
@@ -574,21 +579,19 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
                                           endTime: option.end.substring(
                                             option.end.indexOf("T"),
                                           ),
+                                          title: option.title,
                                         };
                                       },
                                     );
                                     const newOptions: DateTimeOption[] = [];
                                     Object.keys(optionsByDay).forEach(
-                                      (dateString) => {
+                                      (dStr) => {
                                         times.forEach((time) => {
-                                          const start =
-                                            dateString + time.startTime;
                                           newOptions.push({
                                             type: "timeSlot",
-                                            start: start,
-                                            end: dayjs(start)
-                                              .add(slotDuration, "minutes")
-                                              .format("YYYY-MM-DDTHH:mm"),
+                                            start: dStr + time.startTime,
+                                            end: dStr + time.endTime,
+                                            title: time.title,
                                           });
                                         });
                                       },

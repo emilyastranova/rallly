@@ -111,7 +111,7 @@ const PollHeader = () => {
               "sticky top-0 z-10 border-b border-l bg-card text-left",
             )}
           >
-            <div className="sticky right-0 left-[236px] inline-flex h-5 gap-1 px-2 py-0.5 font-medium text-xs uppercase">
+            <div className="sticky right-0 left-[341px] inline-flex h-5 gap-1 px-2 py-0.5 font-medium text-xs uppercase">
               <span data-testid="option-month">{group.month}</span>
               <span className="text-muted-foreground">{group.year}</span>
             </div>
@@ -129,7 +129,7 @@ const PollHeader = () => {
           >
             <div
               style={{ width: `calc(100% / ${group.count})` }}
-              className="sticky left-[236px] z-20 mt-1 px-2 text-center"
+              className="sticky left-[341px] z-20 mt-1 px-2 text-center"
             >
               <div className="font-normal text-muted-foreground text-xs">
                 {group.dow}

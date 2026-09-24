@@ -180,7 +180,7 @@ export const polls = router({
         duration: option.endDate
           ? dayjs(option.endDate).diff(dayjs(option.startDate), "minute")
           : 0,
-        title: option.title || undefined,
+        title: option.title?.trim() || null,
       }));
 
       const kind = isTimePoll ? "time" : "date";
