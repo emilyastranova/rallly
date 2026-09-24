@@ -1,6 +1,7 @@
 import { cn } from "@rallly/ui";
 import { groupBy } from "lodash";
 import type * as React from "react";
+import type { VoteType } from "@/features/poll/constants";
 
 import type { ParsedDateTimeOpton } from "@/lib/utils/date-time-utils";
 
@@ -12,6 +13,9 @@ export interface GroupedOptionsProps {
   selectedParticipantId?: string;
   group: (option: ParsedDateTimeOpton) => string;
   groupClassName?: string;
+  filteredParticipants?: Array<{
+    votes: Array<{ optionId: string; type: VoteType }>;
+  }>;
 }
 
 const GroupedOptions: React.FunctionComponent<GroupedOptionsProps> = ({
@@ -20,6 +24,7 @@ const GroupedOptions: React.FunctionComponent<GroupedOptionsProps> = ({
   selectedParticipantId,
   group,
   groupClassName,
+  filteredParticipants,
 }) => {
   const grouped = groupBy(options, group);
   return (
@@ -39,6 +44,7 @@ const GroupedOptions: React.FunctionComponent<GroupedOptionsProps> = ({
               options={options}
               editable={editable}
               selectedParticipantId={selectedParticipantId}
+              filteredParticipants={filteredParticipants}
             />
           </div>
         );

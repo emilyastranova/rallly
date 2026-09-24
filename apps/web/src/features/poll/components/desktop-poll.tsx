@@ -14,6 +14,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@rallly/ui/tooltip";
 import {
   ArrowLeftIcon,
+  ArrowLeftRightIcon,
   ArrowRightIcon,
   ExpandIcon,
   PlusIcon,
@@ -21,6 +22,7 @@ import {
   Users2Icon,
 } from "lucide-react";
 import * as React from "react";
+import { Controller } from "react-hook-form";
 import { useMeasure, useScroll } from "react-use";
 import useClickAway from "react-use/lib/useClickAway";
 
@@ -31,15 +33,22 @@ import {
   EmptyStateIcon,
   EmptyStateTitle,
 } from "@/components/empty-state";
+import { OptimizedAvatarImage } from "@/components/optimized-avatar-image";
 import { ScrollContainer } from "@/components/scroll-container";
 import {
   useParticipants,
   usePermissions,
   usePoll,
 } from "@/features/poll/client";
+import { useOptions } from "@/features/poll/components/poll-context";
+import { ConnectedScoreSummary } from "@/features/poll/components/score-summary";
 import { useVisibleParticipants } from "@/features/poll/components/visibility";
+import VoteIcon from "@/features/poll/components/vote-icon";
+import { VoteSelector } from "@/features/poll/components/vote-selector";
 import { VotingFooter } from "@/features/poll/components/voting-footer";
 import { useVotingForm } from "@/features/poll/components/voting-form";
+import { YouAvatar } from "@/features/poll/components/you-avatar";
+import { useUser } from "@/features/user/client";
 import { Trans, useTranslation } from "@/i18n/client";
 import ParticipantRow from "./desktop-poll/participant-row";
 import ParticipantRowForm from "./desktop-poll/participant-row-form";
@@ -225,6 +234,10 @@ const DesktopPoll: React.FunctionComponent = () => {
   const votingForm = useVotingForm();
   const mode = votingForm.watch("mode");
 
+  const { options } = useOptions();
+  const user = useUser();
+  const [isAxesSwapped, setIsAxesSwapped] = React.useState<boolean>(false);
+
   const { participants } = useParticipants();
   const visibleParticipants = useVisibleParticipants();
 
@@ -320,24 +333,26 @@ const DesktopPoll: React.FunctionComponent = () => {
     collapse();
   });
 
+  const scrollIncrement = isAxesSwapped ? 240 : 340;
+
   const goToNextPage = React.useCallback(() => {
     setDidScroll(true);
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
-        left: scrollRef.current.scrollLeft + 340,
+        left: scrollRef.current.scrollLeft + scrollIncrement,
         behavior: "smooth",
       });
     }
-  }, []);
+  }, [scrollIncrement]);
 
   const goToPreviousPage = React.useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
-        left: scrollRef.current.scrollLeft - 340,
+        left: scrollRef.current.scrollLeft - scrollIncrement,
         behavior: "smooth",
       });
     }
-  }, []);
+  }, [scrollIncrement]);
 
   return (
     <Card>
@@ -412,12 +427,32 @@ const DesktopPoll: React.FunctionComponent = () => {
                     </Select>
                   </div>
                 ) : null}
+                <Button
+                  type="button"
+                  variant={isAxesSwapped ? "default" : "default"}
+                  size="xs"
+                  onClick={() => setIsAxesSwapped(!isAxesSwapped)}
+                  className={cn(
+                    "ml-2 h-7 gap-1.5 px-2 font-medium text-xs",
+                    isAxesSwapped
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "",
+                  )}
+                  title="Switch the X and Y axes of the schedule"
+                >
+                  <ArrowLeftRightIcon className="size-3.5" />
+                  <span>
+                    {isAxesSwapped ? "Dates on Top" : "Swap X/Y Axes"}
+                  </span>
+                </Button>
               </div>
               <TableControls
-                optionCount={poll.options.length}
-                showTimeZone={
-                  poll.options[0]?.duration !== 0 && !!poll.timeZone
+                optionCount={
+                  isAxesSwapped
+                    ? filteredParticipants.length
+                    : poll.options.length
                 }
+                showTimeZone={poll.options[0]?.duration !== 0 && !poll.timeZone}
                 showScrollControls={isOverflowing}
                 canScrollPrev={x > 0}
                 canScrollNext={
@@ -439,7 +474,8 @@ const DesktopPoll: React.FunctionComponent = () => {
                   <div
                     aria-hidden="true"
                     className={cn(
-                      "pointer-events-none absolute top-0 bottom-3 left-[340px] z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
+                      "pointer-events-none absolute top-0 bottom-3 z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
+                      isAxesSwapped ? "left-[280px]" : "left-[340px]",
                       x > 0 ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -457,78 +493,286 @@ const DesktopPoll: React.FunctionComponent = () => {
                       "scrollbar-thin dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 scrollbar-thumb-gray-300 scrollbar-track-gray-100 relative z-10 h-full min-h-0 grow overflow-auto overscroll-x-none",
                     )}
                   >
-                    <table className="w-full table-auto border-separate border-spacing-0">
-                      <thead>
-                        <PollHeader />
-                      </thead>
-                      <tbody className="relative">
-                        {mode === "new" ? (
-                          <ParticipantRowForm isNew={true} />
-                        ) : null}
-                        {participantSections.map((section, sIdx) => (
-                          <React.Fragment key={section.groupKey}>
-                            {participantSections.length > 1 ||
-                            section.groupKey !== "ungrouped" ? (
-                              <tr
-                                key={`sep-${section.groupKey}`}
-                                className="border-border border-y bg-muted/40"
-                              >
-                                <td
-                                  colSpan={1 + poll.options.length}
-                                  className="sticky left-0 z-20 bg-muted/70 px-3 py-1.5 font-semibold text-foreground/80 text-xs tracking-tight"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Users2Icon className="size-3.5 text-primary" />
-                                    <span>{section.groupName}</span>
+                    {isAxesSwapped ? (
+                      <table className="w-full table-auto border-separate border-spacing-0">
+                        <thead>
+                          <tr>
+                            <th
+                              style={{
+                                minWidth: 280,
+                                maxWidth: 280,
+                                width: 280,
+                              }}
+                              className="sticky top-0 left-0 z-30 h-36 border-border border-b bg-card px-3 py-2 text-left align-bottom"
+                            >
+                              <div className="flex flex-col gap-1 pb-1">
+                                <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                                  Dates & Options
+                                </span>
+                                <span className="font-normal text-[11px] text-muted-foreground">
+                                  {filteredParticipants.length}{" "}
+                                  {filteredParticipants.length === 1
+                                    ? "participant"
+                                    : "participants"}
+                                </span>
+                              </div>
+                            </th>
+                            {mode !== "view" ? (
+                              <th className="sticky top-0 z-20 h-36 min-w-[56px] max-w-[64px] overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom">
+                                <div className="relative h-full w-full overflow-visible">
+                                  <div className="absolute bottom-3 left-4 flex w-44 origin-bottom-left -rotate-45 items-center gap-1.5 whitespace-nowrap text-left">
+                                    <YouAvatar />
+                                    <span className="max-w-[110px] truncate font-semibold text-primary text-xs">
+                                      {mode === "new"
+                                        ? t("you", { defaultValue: "You" })
+                                        : (participants.find(
+                                            (p) =>
+                                              p.id ===
+                                              votingForm.watch("participantId"),
+                                          )?.name ??
+                                          t("you", { defaultValue: "You" }))}
+                                    </span>
                                     <Badge
-                                      variant="outline"
-                                      className="h-3.5 px-1 py-0 text-[10px]"
+                                      variant="default"
+                                      className="shrink-0 px-1 py-0 text-[9px]"
                                     >
-                                      {section.participants.length}
+                                      Voting
                                     </Badge>
                                   </div>
-                                </td>
-                              </tr>
+                                </div>
+                              </th>
                             ) : null}
-                            {section.participants.map((participant, i) => {
-                              const isLastOverall =
-                                sIdx === participantSections.length - 1 &&
-                                i === section.participants.length - 1;
+                            {filteredParticipants.map((participant) => {
+                              const isEditingThis =
+                                mode === "edit" &&
+                                votingForm.watch("participantId") ===
+                                  participant.id;
+                              if (isEditingThis) return null;
+
+                              const isYou = user.ownsObject(participant);
+
                               return (
-                                <ParticipantRow
+                                <th
                                   key={participant.id}
-                                  participant={{
-                                    id: participant.id,
-                                    name: participant.name,
-                                    userId: participant.userId ?? undefined,
-                                    email: participant.email ?? undefined,
-                                    editUrl: participant.editUrl,
-                                    note: participant.note,
-                                    createdAt: participant.createdAt,
-                                    image: participant.image,
-                                    votes: participant.votes,
-                                    groupName: participant.group?.name,
-                                  }}
-                                  editMode={
-                                    votingForm.watch("mode") === "edit" &&
-                                    votingForm.watch("participantId") ===
-                                      participant.id
-                                  }
-                                  className={isLastOverall ? "last-row" : ""}
-                                  onChangeEditMode={(isEditing) => {
-                                    if (isEditing) {
-                                      votingForm.setEditingParticipantId(
-                                        participant.id,
-                                      );
-                                    }
-                                  }}
-                                />
+                                  className="sticky top-0 z-20 h-36 min-w-[56px] max-w-[64px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom"
+                                >
+                                  <div className="relative h-full w-full overflow-visible">
+                                    <div
+                                      className="absolute bottom-3 left-4 flex w-44 origin-bottom-left -rotate-45 items-center gap-1.5 whitespace-nowrap text-left"
+                                      title={participant.name}
+                                    >
+                                      <OptimizedAvatarImage
+                                        name={participant.name}
+                                        src={participant.image ?? undefined}
+                                        size="sm"
+                                      />
+                                      <span className="max-w-[110px] truncate font-medium text-foreground text-xs">
+                                        {participant.name}
+                                      </span>
+                                      {participant.group?.name ? (
+                                        <Badge
+                                          variant="outline"
+                                          className="shrink-0 px-1 py-0 font-normal text-[9px]"
+                                        >
+                                          {participant.group.name}
+                                        </Badge>
+                                      ) : null}
+                                      {isYou ? (
+                                        <Badge
+                                          variant="secondary"
+                                          className="shrink-0 px-1 py-0 text-[9px]"
+                                        >
+                                          <Trans i18nKey="you" defaults="You" />
+                                        </Badge>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                </th>
                               );
                             })}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </table>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {options.map((option) => {
+                            const voteIndex = poll.options.findIndex(
+                              (o) => o.id === option.optionId,
+                            );
+
+                            return (
+                              <tr key={option.optionId} className="group">
+                                <td
+                                  style={{
+                                    minWidth: 280,
+                                    maxWidth: 280,
+                                    width: 280,
+                                  }}
+                                  className="sticky left-0 z-10 border-border border-b bg-card px-3 py-2"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex min-w-0 flex-col">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-semibold text-foreground text-xs">
+                                          {option.dow}, {option.month}{" "}
+                                          {option.day}
+                                        </span>
+                                        {option.year ? (
+                                          <span className="text-[10px] text-muted-foreground">
+                                            {option.year}
+                                          </span>
+                                        ) : null}
+                                      </div>
+                                      {option.title ? (
+                                        <span className="truncate font-medium text-primary text-xs">
+                                          {option.title}
+                                        </span>
+                                      ) : null}
+                                      <span className="text-[11px] text-muted-foreground">
+                                        {option.type === "timeSlot"
+                                          ? `${option.startTime} – ${option.endTime}`
+                                          : t("allDay", {
+                                              defaultValue: "All day",
+                                            })}
+                                      </span>
+                                    </div>
+                                    <div className="shrink-0">
+                                      <ConnectedScoreSummary
+                                        optionId={option.optionId}
+                                        filteredParticipants={
+                                          filteredParticipants
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {mode !== "view" ? (
+                                  <td className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center">
+                                    <div className="flex items-center justify-center p-1">
+                                      {voteIndex !== -1 ? (
+                                        <Controller
+                                          control={votingForm.control}
+                                          name={`votes.${voteIndex}.type`}
+                                          render={({ field }) => (
+                                            <VoteSelector
+                                              value={field.value}
+                                              onChange={(value) =>
+                                                field.onChange(value)
+                                              }
+                                              allowTentativeVotes={
+                                                poll.allowTentativeVotes
+                                              }
+                                              optionLabel={`${option.day} ${option.month}`}
+                                            />
+                                          )}
+                                        />
+                                      ) : null}
+                                    </div>
+                                  </td>
+                                ) : null}
+
+                                {filteredParticipants.map((participant) => {
+                                  const isEditingThis =
+                                    mode === "edit" &&
+                                    votingForm.watch("participantId") ===
+                                      participant.id;
+                                  if (isEditingThis) return null;
+
+                                  const vote = participant.votes.find(
+                                    (v) => v.optionId === option.optionId,
+                                  )?.type;
+
+                                  return (
+                                    <td
+                                      key={participant.id}
+                                      className="h-12 border-border border-b border-l bg-card text-center"
+                                    >
+                                      <div className="flex items-center justify-center">
+                                        <VoteIcon type={vote} />
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <table className="w-full table-auto border-separate border-spacing-0">
+                        <thead>
+                          <PollHeader
+                            filteredParticipants={filteredParticipants}
+                          />
+                        </thead>
+                        <tbody className="relative">
+                          {mode === "new" ? (
+                            <ParticipantRowForm isNew={true} />
+                          ) : null}
+                          {participantSections.map((section, sIdx) => (
+                            <React.Fragment key={section.groupKey}>
+                              {participantSections.length > 1 ||
+                              section.groupKey !== "ungrouped" ? (
+                                <tr
+                                  key={`sep-${section.groupKey}`}
+                                  className="border-border border-y bg-muted/40"
+                                >
+                                  <td
+                                    colSpan={1 + poll.options.length}
+                                    className="sticky left-0 z-20 bg-muted/70 px-3 py-1.5 font-semibold text-foreground/80 text-xs tracking-tight"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Users2Icon className="size-3.5 text-primary" />
+                                      <span>{section.groupName}</span>
+                                      <Badge
+                                        variant="outline"
+                                        className="h-3.5 px-1 py-0 text-[10px]"
+                                      >
+                                        {section.participants.length}
+                                      </Badge>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : null}
+                              {section.participants.map((participant, i) => {
+                                const isLastOverall =
+                                  sIdx === participantSections.length - 1 &&
+                                  i === section.participants.length - 1;
+                                return (
+                                  <ParticipantRow
+                                    key={participant.id}
+                                    participant={{
+                                      id: participant.id,
+                                      name: participant.name,
+                                      userId: participant.userId ?? undefined,
+                                      email: participant.email ?? undefined,
+                                      editUrl: participant.editUrl,
+                                      note: participant.note,
+                                      createdAt: participant.createdAt,
+                                      image: participant.image,
+                                      votes: participant.votes,
+                                      groupName: participant.group?.name,
+                                    }}
+                                    editMode={
+                                      votingForm.watch("mode") === "edit" &&
+                                      votingForm.watch("participantId") ===
+                                        participant.id
+                                    }
+                                    className={isLastOverall ? "last-row" : ""}
+                                    onChangeEditMode={(isEditing) => {
+                                      if (isEditing) {
+                                        votingForm.setEditingParticipantId(
+                                          participant.id,
+                                        );
+                                      }
+                                    }}
+                                  />
+                                );
+                              })}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </ScrollContainer>
                 </div>
               ) : (

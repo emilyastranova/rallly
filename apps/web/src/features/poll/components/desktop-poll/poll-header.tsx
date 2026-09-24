@@ -4,6 +4,7 @@ import { ClockIcon } from "lucide-react";
 import type * as React from "react";
 import { useOptions } from "@/features/poll/components/poll-context";
 import { ConnectedScoreSummary } from "@/features/poll/components/score-summary";
+import type { VoteType } from "@/features/poll/constants";
 import { Trans } from "@/i18n/client";
 
 const TimeRange: React.FunctionComponent<{
@@ -57,7 +58,11 @@ const dayRowHeight = 60;
 
 const scoreRowTop = monthRowHeight + dayRowHeight;
 
-const PollHeader = () => {
+const PollHeader: React.FunctionComponent<{
+  filteredParticipants?: Array<{
+    votes: Array<{ optionId: string; type: VoteType }>;
+  }>;
+}> = ({ filteredParticipants }) => {
   const { options } = useOptions();
 
   const monthGroups: { month: string; year: string; count: number }[] = [];
@@ -173,7 +178,10 @@ const PollHeader = () => {
                     <Trans i18nKey="allDay" defaults="All day" />
                   </p>
                 )}
-                <ConnectedScoreSummary optionId={option.optionId} />
+                <ConnectedScoreSummary
+                  optionId={option.optionId}
+                  filteredParticipants={filteredParticipants}
+                />
               </div>
             </th>
           );

@@ -409,6 +409,7 @@ const MobilePoll: React.FunctionComponent = () => {
         selectedParticipantId={selectedParticipantId}
         options={options}
         editable={isEditing}
+        filteredParticipants={filteredParticipants}
         group={(option) => {
           if (option.type === "timeSlot") {
             return `${option.dow} ${option.day} ${option.month} ${option.year}`;

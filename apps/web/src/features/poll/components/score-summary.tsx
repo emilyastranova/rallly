@@ -6,6 +6,7 @@ import * as React from "react";
 import { usePrevious } from "react-use";
 import { usePoll } from "@/features/poll/components/poll-context";
 import { IfScoresVisible } from "@/features/poll/components/visibility";
+import type { VoteType } from "@/features/poll/constants";
 
 export interface PopularityScoreProps {
   yesScore: number;
@@ -21,17 +22,63 @@ export interface PopularityScoreProps {
 
 export const ConnectedScoreSummary: React.FunctionComponent<{
   optionId: string;
-}> = ({ optionId }) => {
+  filteredParticipants?: Array<{
+    votes: Array<{ optionId: string; type: VoteType }>;
+  }>;
+}> = ({ optionId, filteredParticipants }) => {
   const { getScore, highScore, poll } = usePoll();
-  const { yes, ifNeedBe } = getScore(optionId);
+
+  const { yes, ifNeedBe } = React.useMemo(() => {
+    if (filteredParticipants) {
+      return filteredParticipants.reduce(
+        (acc, p) => {
+          for (const vote of p.votes) {
+            if (vote.optionId === optionId) {
+              if (vote.type === "yes") {
+                acc.yes += 1;
+              } else if (vote.type === "ifNeedBe") {
+                acc.ifNeedBe += 1;
+              }
+            }
+          }
+          return acc;
+        },
+        { yes: 0, ifNeedBe: 0 },
+      );
+    }
+    const s = getScore(optionId);
+    return { yes: s.yes, ifNeedBe: s.ifNeedBe };
+  }, [filteredParticipants, getScore, optionId]);
+
+  const effectiveHighScore = React.useMemo(() => {
+    if (filteredParticipants) {
+      return poll.options.reduce((acc, curr) => {
+        let score = 0;
+        for (const p of filteredParticipants) {
+          for (const v of p.votes) {
+            if (
+              v.optionId === curr.id &&
+              (v.type === "yes" || v.type === "ifNeedBe")
+            ) {
+              score += 1;
+            }
+          }
+        }
+        return score > acc ? score : acc;
+      }, 1);
+    }
+    return highScore;
+  }, [filteredParticipants, highScore, poll.options]);
+
   const score = yes + ifNeedBe;
-  const highlight = score === highScore && score > 1;
+  const highlight = score === effectiveHighScore && score > 0;
+
   return (
     <IfScoresVisible>
       <ScoreSummary
         yesScore={yes}
         ifNeedBeScore={ifNeedBe}
-        highScore={highScore}
+        highScore={effectiveHighScore}
         highlight={highlight}
         showTentative={poll.allowTentativeVotes}
       />

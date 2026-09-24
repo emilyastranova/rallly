@@ -13,12 +13,16 @@ export interface PollOptions {
   options: ParsedDateTimeOpton[];
   editable?: boolean;
   selectedParticipantId?: string;
+  filteredParticipants?: Array<{
+    votes: Array<{ optionId: string; type: VoteType }>;
+  }>;
 }
 
 const PollOptions: React.FunctionComponent<PollOptions> = ({
   options,
   editable,
   selectedParticipantId,
+  filteredParticipants,
 }) => {
   const { control } = useVotingForm();
   const { getScore, getVote, optionIds, poll } = usePoll();
@@ -32,7 +36,20 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
   return (
     <div className="divide-y">
       {options.map((option) => {
-        const score = getScore(option.optionId);
+        const score = filteredParticipants
+          ? filteredParticipants.reduce(
+              (acc, p) => {
+                for (const v of p.votes) {
+                  if (v.optionId === option.optionId) {
+                    if (v.type === "yes") acc.yes += 1;
+                    else if (v.type === "ifNeedBe") acc.ifNeedBe += 1;
+                  }
+                }
+                return acc;
+              },
+              { yes: 0, ifNeedBe: 0, no: 0, skip: 0 },
+            )
+          : getScore(option.optionId);
         const index = optionIds.indexOf(option.optionId);
         return (
           <div key={option.optionId} className="p-2">
