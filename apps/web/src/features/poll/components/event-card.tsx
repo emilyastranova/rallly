@@ -106,17 +106,21 @@ export function EventCard() {
         <IconDescriptionList aria-label="Response options">
           <IconDescription
             icon={<VoteIcon type="yes" />}
-            label={<Trans i18nKey="yes" defaults="Yes" />}
+            label={poll.yesLabel || <Trans i18nKey="yes" defaults="Yes" />}
           />
           {poll.allowTentativeVotes ? (
             <IconDescription
               icon={<VoteIcon type="ifNeedBe" />}
-              label={<Trans i18nKey="ifNeedBe" defaults="If need be" />}
+              label={
+                poll.ifNeedBeLabel || (
+                  <Trans i18nKey="ifNeedBe" defaults="If need be" />
+                )
+              }
             />
           ) : null}
           <IconDescription
             icon={<VoteIcon type="no" />}
-            label={<Trans i18nKey="no" defaults="No" />}
+            label={poll.noLabel || <Trans i18nKey="no" defaults="No" />}
           />
         </IconDescriptionList>
       </CardContent>
