@@ -707,28 +707,32 @@ const DesktopPoll: React.FunctionComponent = () => {
                               dayGroup.options.length > 1 ? (
                                 <tr className="select-none border-border border-y bg-muted/60">
                                   <td
-                                    colSpan={totalTableCols}
-                                    className="sticky left-0 z-20 bg-muted/80 px-3 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
+                                    style={{
+                                      minWidth: 165,
+                                      maxWidth: 165,
+                                      width: 165,
+                                    }}
+                                    className="sticky left-0 z-20 border-border border-r bg-muted/90 px-2.5 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
                                   >
-                                    <div className="flex items-center gap-2">
-                                      <CalendarIcon className="size-3.5 shrink-0 text-primary" />
-                                      <span>{dayGroup.dayLabel}</span>
-                                      {dayGroup.year ? (
-                                        <span className="font-normal text-[11px] text-muted-foreground">
-                                          {dayGroup.year}
+                                    <div className="flex items-center justify-between gap-1.5">
+                                      <div className="flex min-w-0 items-center gap-1.5">
+                                        <CalendarIcon className="size-3.5 shrink-0 text-primary" />
+                                        <span className="truncate font-semibold text-foreground/90 text-xs">
+                                          {dayGroup.dayLabel}
                                         </span>
-                                      ) : null}
+                                      </div>
                                       <Badge
                                         variant="outline"
-                                        className="h-4 px-1 py-0 font-normal text-[10px] text-muted-foreground"
+                                        className="h-4 shrink-0 px-1 py-0 font-normal text-[9px] text-muted-foreground"
                                       >
-                                        {dayGroup.options.length}{" "}
-                                        {dayGroup.options.length === 1
-                                          ? "slot"
-                                          : "slots"}
+                                        {dayGroup.options.length}
                                       </Badge>
                                     </div>
                                   </td>
+                                  <td
+                                    colSpan={totalTableCols - 1}
+                                    className="border-border border-b bg-muted/30"
+                                  />
                                 </tr>
                               ) : null}
 
