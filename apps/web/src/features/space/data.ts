@@ -2,14 +2,9 @@ import "server-only";
 
 import type { SpaceMemberRole as DBSpaceMemberRole } from "@rallly/database";
 import { prisma } from "@rallly/database";
-import { createLogger } from "@rallly/logger";
 import { cache } from "react";
 
-import { isBillingEnabled } from "@/features/billing/constants";
-import { getSpaceSubscription } from "@/features/billing/data";
 import { getInstancePolicy } from "@/features/instance-policy/data";
-import { cached_getInstanceLicense } from "@/features/licensing/data";
-import type { LicenseType } from "@/features/licensing/schema";
 import type { MemberDTO } from "@/features/space/member/types";
 import { effectiveSpaceMemberWhere } from "@/features/space/member/utils";
 import {
@@ -17,9 +12,6 @@ import {
   fromDBRole,
   isSpaceBrandingActive,
 } from "@/features/space/utils";
-import { AppError } from "@/lib/errors/app-error";
-
-const logger = createLogger("space/data");
 
 function createMemberDTO(member: {
   id: string;
@@ -64,77 +56,11 @@ export async function getSpaceSeatCount(spaceId: string) {
 }
 
 /**
- * Default seat limit for spaces without active subscriptions
- */
-const DEFAULT_SEAT_LIMIT = 1;
-const MAX_SEAT_LIMIT = 100;
-
-/**
- * Returns the seat limit for self-hosted instances based on license type
- */
-function getSelfHostedSeatLimit(licenseType: LicenseType | null): number {
-  if (!licenseType) {
-    return DEFAULT_SEAT_LIMIT;
-  }
-
-  switch (licenseType) {
-    case "PLUS":
-      return 5;
-    case "ORGANIZATION":
-      return 50;
-    case "ENTERPRISE":
-      return MAX_SEAT_LIMIT;
-    default:
-      return DEFAULT_SEAT_LIMIT;
-  }
-}
-
-/**
  * Gets the total number of seats available for a space
  * Handles both cloud-hosted (Stripe subscription) and self-hosted (license-based) deployments
  */
-export async function getTotalSeatsForSpace(spaceId: string): Promise<number> {
-  try {
-    if (!isBillingEnabled) {
-      // Without billing, seats come from the instance license
-      const license = await cached_getInstanceLicense();
-
-      if (!license) {
-        // No license found, return default limit
-        return DEFAULT_SEAT_LIMIT;
-      }
-
-      // If license has explicit seats defined, use that
-      if (license.seats && license.seats > 0) {
-        return Math.min(license.seats, MAX_SEAT_LIMIT);
-      }
-
-      // Otherwise, use the license type to determine seat limit
-      return getSelfHostedSeatLimit(license.type);
-    } else {
-      // For cloud-hosted instances, get seat count from Stripe subscription
-      const subscription = await getSpaceSubscription(spaceId);
-
-      if (!subscription || !subscription.active) {
-        // Return default limit for spaces without active subscriptions
-        return DEFAULT_SEAT_LIMIT;
-      }
-
-      return subscription.quantity || DEFAULT_SEAT_LIMIT;
-    }
-  } catch (error) {
-    logger.error({ error, spaceId }, "Failed to get total seats for space");
-
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to retrieve seat information",
-      cause: error,
-    });
-  }
+export async function getTotalSeatsForSpace(_spaceId: string): Promise<number> {
+  return Number.POSITIVE_INFINITY;
 }
 
 export const getMember = async (id: string) => {
@@ -218,12 +144,6 @@ export const listSpacesForUser = cache(async (userId: string) => {
           hideAttribution: true,
           shared: true,
           _count: { select: { members: true } },
-          subscriptions: {
-            where: { active: true },
-            select: { quantity: true },
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
         },
       },
     },
@@ -237,7 +157,7 @@ export const listSpacesForUser = cache(async (userId: string) => {
         ...spaceMember.space,
         role: spaceMember.role,
         memberCount: spaceMember.space._count.members,
-        seatCount: spaceMember.space.subscriptions[0]?.quantity ?? 1,
+        seatCount: Number.POSITIVE_INFINITY,
       },
       policy,
     }),
@@ -254,15 +174,6 @@ export const getActiveSpaceForUser = cache(async (userId: string) => {
       space: {
         include: {
           _count: { select: { members: true } },
-          subscriptions: {
-            where: { active: true },
-            select: { quantity: true, status: true },
-            // Newest first, matching getSpaceSubscription: nothing stops a
-            // space having two active rows, and an unordered take(1) could
-            // otherwise disagree with the billing page about which one counts.
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
         },
       },
     },
@@ -277,9 +188,8 @@ export const getActiveSpaceForUser = cache(async (userId: string) => {
       ...spaceMember.space,
       role: spaceMember.role,
       memberCount: spaceMember.space._count.members,
-      seatCount: spaceMember.space.subscriptions[0]?.quantity ?? 1,
-      subscriptionPastDue:
-        spaceMember.space.subscriptions[0]?.status === "past_due",
+      seatCount: Number.POSITIVE_INFINITY,
+      subscriptionPastDue: false,
     },
     policy: await getInstancePolicy(),
   });

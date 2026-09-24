@@ -22,8 +22,6 @@ model Space {
   // spaces map to teams and unshared spaces to organizations.
   shared                     Boolean    @default(false)
   // Set once the space's nonprofit application is approved; the coupon is
-  // applied at checkout and to the active subscription from this.
-  nonprofitDiscountGrantedAt DateTime?  @map("nonprofit_discount_granted_at")
   createdAt                  DateTime   @default(now()) @map("created_at")
   updatedAt                  DateTime   @updatedAt @map("updated_at")
 
@@ -32,15 +30,13 @@ model Space {
   scheduledEvents ScheduledEvent[]
   eventTypes      EventType[]
   sheets          Sheet[]
-  subscriptions   Subscription[]   @relation("SpaceToSubscription")
+  groups          Group[]
 
   members SpaceMember[]
 
   memberInvites SpaceMemberInvite[]
 
   apiKeys SpaceApiKey[]
-
-  nonprofitApplications NonprofitApplication[]
 
   webhooks SpaceWebhook[]
 

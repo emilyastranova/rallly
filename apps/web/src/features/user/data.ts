@@ -15,7 +15,7 @@ export const createUserDTO = (user: User): UserDTO => ({
   timeFormat: user.timeFormat ?? undefined,
   locale: user.locale ?? undefined,
   weekStart: user.weekStart ?? undefined,
-  customerId: user.customerId ?? undefined,
+  primaryGroupId: user.primaryGroupId ?? undefined,
   isGuest: user.isAnonymous,
   deletedAt: user.deletedAt ?? undefined,
   emailVerified: user.emailVerified ?? false,
@@ -24,13 +24,21 @@ export const createUserDTO = (user: User): UserDTO => ({
 export const getUser = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    include: {
+      primaryGroup: { select: { id: true, name: true } },
+      groups: { select: { id: true, name: true } },
+    },
   });
 
   if (!user) {
     return null;
   }
 
-  return createUserDTO(user);
+  return {
+    ...createUserDTO(user),
+    primaryGroup: user.primaryGroup ?? undefined,
+    groups: user.groups,
+  };
 };
 
 export function getUserProfile(userId: string) {
@@ -56,10 +64,6 @@ export async function getUserDeletionDetails(userId: string) {
     where: { id: userId },
     select: {
       email: true,
-      customerId: true,
-      _count: {
-        select: { subscriptions: { where: { active: true } } },
-      },
     },
   });
 
@@ -69,8 +73,8 @@ export async function getUserDeletionDetails(userId: string) {
 
   return {
     email: user.email,
-    customerId: user.customerId,
-    hasActiveSubscription: user._count.subscriptions > 0,
+    customerId: undefined,
+    hasActiveSubscription: false,
   };
 }
 

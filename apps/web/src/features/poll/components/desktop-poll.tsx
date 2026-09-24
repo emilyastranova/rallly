@@ -4,6 +4,13 @@ import { cn } from "@rallly/ui";
 import { Badge } from "@rallly/ui/badge";
 import { Button } from "@rallly/ui/button";
 import { Card, CardHeader, CardTitle } from "@rallly/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@rallly/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@rallly/ui/tooltip";
 import {
   ArrowLeftIcon,
@@ -221,6 +228,80 @@ const DesktopPoll: React.FunctionComponent = () => {
   const { participants } = useParticipants();
   const visibleParticipants = useVisibleParticipants();
 
+  const [selectedGroupId, setSelectedGroupId] = React.useState<string>("all");
+
+  const availableGroups = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of participants) {
+      if (p.group) {
+        map.set(p.group.id, p.group.name);
+      }
+      if (p.userGroups) {
+        for (const ug of p.userGroups) {
+          map.set(ug.id, ug.name);
+        }
+      }
+    }
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [participants]);
+
+  const filteredParticipants = React.useMemo(() => {
+    if (selectedGroupId === "all") {
+      return visibleParticipants;
+    }
+    if (selectedGroupId === "none") {
+      return visibleParticipants.filter(
+        (p) => !p.group && (!p.userGroups || p.userGroups.length === 0),
+      );
+    }
+    return visibleParticipants.filter((p) => {
+      if (p.group?.id === selectedGroupId) return true;
+      if (p.userGroups?.some((ug) => ug.id === selectedGroupId)) return true;
+      return false;
+    });
+  }, [visibleParticipants, selectedGroupId]);
+
+  const participantSections = React.useMemo(() => {
+    const sections: Array<{
+      groupKey: string;
+      groupName: string;
+      participants: typeof visibleParticipants;
+    }> = [];
+
+    const groupMap = new Map<string, typeof visibleParticipants>();
+    const ungrouped: typeof visibleParticipants = [];
+
+    for (const p of filteredParticipants) {
+      const gName = p.group?.name;
+      if (gName) {
+        if (!groupMap.has(gName)) {
+          groupMap.set(gName, []);
+        }
+        groupMap.get(gName)?.push(p);
+      } else {
+        ungrouped.push(p);
+      }
+    }
+
+    for (const [name, pList] of groupMap.entries()) {
+      sections.push({
+        groupKey: name,
+        groupName: name,
+        participants: pList,
+      });
+    }
+
+    if (ungrouped.length > 0) {
+      sections.push({
+        groupKey: "ungrouped",
+        groupName: sections.length > 0 ? "General / Other" : "Participants",
+        participants: ungrouped,
+      });
+    }
+
+    return sections;
+  }, [filteredParticipants]);
+
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const [isOverflowing, setIsOverflowing] = React.useState(false);
@@ -277,13 +358,13 @@ const DesktopPoll: React.FunctionComponent = () => {
                 <CardTitle>
                   <Trans i18nKey="participants" />
                 </CardTitle>
-                <Badge>{participants.length}</Badge>
+                <Badge>{filteredParticipants.length}</Badge>
                 {canAddNewParticipant && mode !== "new" ? (
                   <Button
                     aria-label={t("addParticipant", {
                       defaultValue: "Add participant",
                     })}
-                    className="ml-2"
+                    className="ml-1"
                     size="icon-xs"
                     data-testid="add-participant-button"
                     onClick={() => {
@@ -292,6 +373,28 @@ const DesktopPoll: React.FunctionComponent = () => {
                   >
                     <PlusIcon className="text-muted-foreground" />
                   </Button>
+                ) : null}
+                {availableGroups.length > 0 ? (
+                  <div className="ml-2 flex items-center">
+                    <Select
+                      value={selectedGroupId}
+                      onValueChange={(val) => setSelectedGroupId(val ?? "all")}
+                    >
+                      <SelectTrigger className="h-7 gap-1.5 border-border bg-card px-2.5 text-xs">
+                        <Users2Icon className="size-3.5 text-muted-foreground" />
+                        <SelectValue placeholder="All Groups" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Groups</SelectItem>
+                        {availableGroups.map((g) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            {g.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="none">Ungrouped</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 ) : null}
               </div>
               <TableControls
@@ -346,8 +449,35 @@ const DesktopPoll: React.FunctionComponent = () => {
                         {mode === "new" ? (
                           <ParticipantRowForm isNew={true} />
                         ) : null}
-                        {visibleParticipants.length > 0
-                          ? visibleParticipants.map((participant, i) => {
+                        {participantSections.map((section, sIdx) => (
+                          <React.Fragment key={section.groupKey}>
+                            {participantSections.length > 1 ||
+                            section.groupKey !== "ungrouped" ? (
+                              <tr
+                                key={`sep-${section.groupKey}`}
+                                className="border-border border-y bg-muted/40"
+                              >
+                                <td
+                                  colSpan={1 + poll.options.length}
+                                  className="sticky left-0 z-20 bg-muted/70 px-3 py-1.5 font-semibold text-foreground/80 text-xs tracking-tight"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Users2Icon className="size-3.5 text-primary" />
+                                    <span>{section.groupName}</span>
+                                    <Badge
+                                      variant="outline"
+                                      className="h-3.5 px-1 py-0 text-[10px]"
+                                    >
+                                      {section.participants.length}
+                                    </Badge>
+                                  </div>
+                                </td>
+                              </tr>
+                            ) : null}
+                            {section.participants.map((participant, i) => {
+                              const isLastOverall =
+                                sIdx === participantSections.length - 1 &&
+                                i === section.participants.length - 1;
                               return (
                                 <ParticipantRow
                                   key={participant.id}
@@ -361,17 +491,14 @@ const DesktopPoll: React.FunctionComponent = () => {
                                     createdAt: participant.createdAt,
                                     image: participant.image,
                                     votes: participant.votes,
+                                    groupName: participant.group?.name,
                                   }}
                                   editMode={
                                     votingForm.watch("mode") === "edit" &&
                                     votingForm.watch("participantId") ===
                                       participant.id
                                   }
-                                  className={
-                                    i === visibleParticipants.length - 1
-                                      ? "last-row"
-                                      : ""
-                                  }
+                                  className={isLastOverall ? "last-row" : ""}
                                   onChangeEditMode={(isEditing) => {
                                     if (isEditing) {
                                       votingForm.setEditingParticipantId(
@@ -381,8 +508,9 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   }}
                                 />
                               );
-                            })
-                          : null}
+                            })}
+                          </React.Fragment>
+                        ))}
                       </tbody>
                     </table>
                   </ScrollContainer>

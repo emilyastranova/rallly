@@ -154,18 +154,6 @@ export const deleteSpaceAction = authActionClient
       });
     }
 
-    const activeSubscriptionCount = await prisma.subscription.count({
-      where: { spaceId: space.id, active: true },
-    });
-
-    if (activeSubscriptionCount > 0) {
-      throw new AppError({
-        code: "FORBIDDEN",
-        message:
-          "Cannot delete space with an active subscription. Please cancel the subscription first.",
-      });
-    }
-
     await deleteSpace({ spaceId: space.id });
 
     track(ctx.user, {

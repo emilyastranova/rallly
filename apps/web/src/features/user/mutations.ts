@@ -217,8 +217,6 @@ export async function deleteOrphanedAnonymousUsers() {
     spaces: { none: {} },
     memberOf: { none: {} },
     spaceMemberInvites: { none: {} },
-    subscriptions: { none: {} },
-    paymentMethods: { none: {} },
     calendarConnections: { none: {} },
     credentials: { none: {} },
   } satisfies Prisma.UserWhereInput;

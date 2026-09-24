@@ -30,7 +30,6 @@ import {
   isEmailBlocked,
   isTemporaryEmail,
 } from "@/features/auth/utils";
-import { getStripe } from "@/features/billing/service";
 import { isRegistrationOpen } from "@/features/instance-settings/data";
 import { getUserLocaleByEmail } from "@/features/user/data";
 import type { UserDTO } from "@/features/user/schema";
@@ -457,24 +456,6 @@ export const authLib = betterAuth({
               },
             );
             return;
-          }
-
-          const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { customerId: true },
-          });
-
-          if (user?.customerId) {
-            try {
-              await getStripe().customers.update(user.customerId, {
-                email: newEmail,
-              });
-            } catch (error) {
-              logger.error(
-                { error },
-                "Failed to update Stripe customer email after email change",
-              );
-            }
           }
 
           track(

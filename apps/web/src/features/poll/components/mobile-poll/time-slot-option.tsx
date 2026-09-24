@@ -7,6 +7,7 @@ export interface TimeSlotOptionProps extends PollOptionProps {
   startTime: string;
   endTime: string;
   duration: string;
+  title?: string | null;
 }
 
 const meridiem = (time: string) => /(AM|PM)$/.exec(time)?.[0];
@@ -14,10 +15,9 @@ const meridiem = (time: string) => /(AM|PM)$/.exec(time)?.[0];
 const TimeSlotOption: React.FunctionComponent<TimeSlotOptionProps> = ({
   startTime,
   endTime,
+  title,
   ...rest
 }) => {
-  // "12:00 – 1:00 PM" reads cleaner than repeating the period; keep it when
-  // the range crosses noon ("11:00 AM – 1:00 PM") or the locale has none.
   const startLabel =
     meridiem(startTime) && meridiem(startTime) === meridiem(endTime)
       ? startTime.replace(/ (AM|PM)$/, "")
@@ -25,9 +25,18 @@ const TimeSlotOption: React.FunctionComponent<TimeSlotOptionProps> = ({
 
   return (
     <PollOption {...rest}>
-      <div className="text-sm">
-        {startLabel} – {endTime}
-      </div>
+      {title ? (
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground text-sm">{title}</span>
+          <span className="text-muted-foreground text-xs">
+            {startLabel} – {endTime}
+          </span>
+        </div>
+      ) : (
+        <div className="text-sm">
+          {startLabel} – {endTime}
+        </div>
+      )}
     </PollOption>
   );
 };

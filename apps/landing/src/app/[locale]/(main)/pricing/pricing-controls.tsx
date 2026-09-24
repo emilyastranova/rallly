@@ -1,6 +1,5 @@
 "use client";
 
-import type { PricesByCurrency } from "@rallly/billing";
 import { cn } from "@rallly/ui";
 import { NumberTicker } from "@rallly/ui/number-ticker";
 import {
@@ -12,6 +11,7 @@ import {
 } from "@rallly/ui/select";
 import { Switch } from "@rallly/ui/switch";
 import React from "react";
+import type { PricesByCurrency } from "@/lib/billing-types";
 import { readCurrencyCookie, writeCurrencyCookie } from "@/lib/currency";
 
 type BillingInterval = "monthly" | "yearly";

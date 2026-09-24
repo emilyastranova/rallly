@@ -151,7 +151,18 @@ const PollHeader = () => {
               className="sticky z-20 border-b border-l bg-card px-2 pb-2.5 align-top"
             >
               <div className="flex flex-col items-center gap-3">
-                {option.type === "timeSlot" ? (
+                {option.title ? (
+                  <div className="flex flex-col items-center text-center">
+                    <span className="font-semibold text-foreground text-xs tracking-tight">
+                      {option.title}
+                    </span>
+                    {option.type === "timeSlot" ? (
+                      <span className="whitespace-nowrap font-normal text-[11px] text-muted-foreground">
+                        {option.startTime} – {option.endTime}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : option.type === "timeSlot" ? (
                   <TimeRange
                     start={option.startTime}
                     end={option.endTime}

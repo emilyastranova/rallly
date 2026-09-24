@@ -108,6 +108,14 @@ const MobilePoll: React.FunctionComponent = () => {
             size="sm"
           />
           <ParticipantName>{participant.name}</ParticipantName>
+          {participant.group?.name ? (
+            <Badge
+              variant="outline"
+              className="px-1 py-0 font-normal text-[10px]"
+            >
+              {participant.group.name}
+            </Badge>
+          ) : null}
           {session.ownsObject(participant) && (
             <Badge>
               <Trans i18nKey="you" defaults="You" />

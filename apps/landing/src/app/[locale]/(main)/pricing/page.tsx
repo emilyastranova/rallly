@@ -1,7 +1,5 @@
 "use cache";
 
-import type { PriceAmounts } from "@rallly/billing";
-import { PLAN_NAMES, yearlySavingsPercent } from "@rallly/billing";
 import { buttonVariants } from "@rallly/ui";
 import { Badge } from "@rallly/ui/badge";
 import {
@@ -43,6 +41,8 @@ import {
 } from "@/components/section";
 import { getTranslation } from "@/i18n/server";
 import { getAlternates } from "@/lib/alternates";
+import type { PriceAmounts } from "@/lib/billing-types";
+import { PLAN_NAMES, yearlySavingsPercent } from "@/lib/billing-types";
 import {
   getMonthlyPollCount,
   getMonthlyVoterCount,

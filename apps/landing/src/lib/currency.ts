@@ -1,5 +1,5 @@
-import { CURRENCY_COOKIE_NAME } from "@rallly/billing/pricing";
 import Cookies from "js-cookie";
+import { CURRENCY_COOKIE_NAME } from "@/lib/billing-types";
 
 export { CURRENCY_COOKIE_NAME };
 

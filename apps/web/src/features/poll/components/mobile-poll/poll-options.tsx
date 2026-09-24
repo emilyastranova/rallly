@@ -72,6 +72,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                         startTime={option.startTime}
                         endTime={option.endTime}
                         duration={option.duration}
+                        title={option.title}
                         editable={editable}
                         selectedParticipantId={selectedParticipant?.id}
                       />

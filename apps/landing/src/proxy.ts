@@ -1,9 +1,6 @@
-import {
-  displayedCurrencies,
-  getCountryCurrency,
-} from "@rallly/billing/pricing";
 import type { NextRequest } from "next/server";
 import { i18nMiddleware } from "@/i18n/middleware";
+import { displayedCurrencies, getCountryCurrency } from "@/lib/billing-types";
 import { CURRENCY_COOKIE_NAME } from "@/lib/currency";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
@@ -11,8 +8,6 @@ const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 export async function proxy(req: NextRequest) {
   const response = i18nMiddleware(req);
 
-  // The pricing page is cached, so it cannot read the country header itself.
-  // Stamp the detected currency once and let the page pick it up client side.
   if (!req.cookies.has(CURRENCY_COOKIE_NAME)) {
     response.cookies.set(
       CURRENCY_COOKIE_NAME,

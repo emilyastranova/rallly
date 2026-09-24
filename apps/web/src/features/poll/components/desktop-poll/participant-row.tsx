@@ -34,6 +34,7 @@ export interface ParticipantRowProps {
     createdAt: Date;
     image?: string | null;
     votes: Vote[];
+    groupName?: string | null;
   };
   className?: string;
   editMode?: boolean;
@@ -49,6 +50,7 @@ export const ParticipantRowView: React.FunctionComponent<{
   className?: string;
   isYou?: boolean;
   participantId: string;
+  groupName?: string | null;
 }> = ({
   name,
   image,
@@ -58,6 +60,7 @@ export const ParticipantRowView: React.FunctionComponent<{
   className,
   isYou,
   participantId,
+  groupName,
 }) => {
   return (
     <tr
@@ -79,6 +82,14 @@ export const ParticipantRowView: React.FunctionComponent<{
             <ParticipantName>{name}</ParticipantName>
           </Participant>
           <div className="flex items-center gap-x-2">
+            {groupName ? (
+              <Badge
+                variant="outline"
+                className="shrink-0 px-1.5 py-0 font-normal text-[10px]"
+              >
+                {groupName}
+              </Badge>
+            ) : null}
             {isYou ? (
               <Badge variant="secondary" className="shrink-0">
                 <Trans i18nKey="you" defaults="You" />
@@ -144,6 +155,7 @@ const ParticipantRow: React.FunctionComponent<ParticipantRowProps> = ({
         return getVote(participant.id, optionId);
       })}
       participantId={participant.id}
+      groupName={participant.groupName}
       note={
         // The server only includes notes the viewer may see (host or author).
         participant.note ? (

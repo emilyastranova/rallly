@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@rallly/ui/dropdown-menu";
+import { Input } from "@rallly/ui/input";
 import { RadioCards, RadioCardsItem } from "@rallly/ui/radio-pills";
 import {
   CalendarIcon,
@@ -84,7 +85,7 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
 
   // Standard presets, plus the current duration if it's a non-standard value
   // (e.g. set by dragging in the week view) so the selection stays visible.
-  const durationPresets = [30, 60, 90, 120];
+  const durationPresets = [30, 60, 90, 120, 180, 240, 360];
   const durationOptions =
     uniformDuration !== null && !durationPresets.includes(uniformDuration)
       ? [...durationPresets, uniformDuration].sort((a, b) => a - b)
@@ -421,6 +422,21 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
                                     );
                                   }}
                                 />
+                                <Input
+                                  placeholder="Slot name (e.g. Morning)"
+                                  value={option.title ?? ""}
+                                  className="h-9 w-44 text-xs"
+                                  onChange={(e) => {
+                                    onChange([
+                                      ...options.slice(0, index),
+                                      {
+                                        ...option,
+                                        title: e.target.value,
+                                      },
+                                      ...options.slice(index + 1),
+                                    ]);
+                                  }}
+                                />
                                 <Button
                                   aria-label={t("removeTimeSlot", {
                                     defaultValue: "Remove time slot",
@@ -439,7 +455,7 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
                               </div>
                             );
                           })}
-                          <div className="flex items-center space-x-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <Button
                               onClick={() => {
                                 const lastOption = expectTimeOption(
@@ -474,6 +490,57 @@ const MonthCalendar: React.FunctionComponent<DateTimePickerProps> = ({
                               {t("addTimeOption", {
                                 defaultValue: "Add time option",
                               })}
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => {
+                                onChange([
+                                  ...options,
+                                  {
+                                    type: "timeSlot",
+                                    title: "Morning",
+                                    start: `${dateString}T09:00`,
+                                    end: `${dateString}T12:00`,
+                                  },
+                                ]);
+                              }}
+                            >
+                              + Morning (3h)
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => {
+                                onChange([
+                                  ...options,
+                                  {
+                                    type: "timeSlot",
+                                    title: "Afternoon",
+                                    start: `${dateString}T13:00`,
+                                    end: `${dateString}T17:00`,
+                                  },
+                                ]);
+                              }}
+                            >
+                              + Afternoon (4h)
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => {
+                                onChange([
+                                  ...options,
+                                  {
+                                    type: "timeSlot",
+                                    title: "Evening",
+                                    start: `${dateString}T18:00`,
+                                    end: `${dateString}T21:00`,
+                                  },
+                                ]);
+                              }}
+                            >
+                              + Evening (3h)
                             </Button>
                             <DropdownMenu>
                               <DropdownMenuTrigger

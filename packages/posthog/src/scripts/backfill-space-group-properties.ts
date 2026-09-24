@@ -59,11 +59,6 @@ async function fetchSpacePage(cursor?: string) {
       tier: true,
       showBranding: true,
       _count: { select: { members: true } },
-      subscriptions: {
-        where: { active: true },
-        select: { quantity: true },
-        take: 1,
-      },
     },
   });
 }
@@ -75,7 +70,7 @@ function toGroupProperties(
     name: space.name,
     tier: space.tier,
     member_count: space._count.members,
-    seat_count: space.subscriptions[0]?.quantity ?? DEFAULT_SEAT_COUNT,
+    seat_count: DEFAULT_SEAT_COUNT,
     custom_branding: space.showBranding,
   };
 }

@@ -21,7 +21,12 @@ export type PollDetails = {
   timeZone: string | null;
   userId: string | null;
   spaceId: string | null;
-  options: { id: string; startTime: Date; duration: number }[];
+  options: {
+    id: string;
+    startTime: Date;
+    duration: number;
+    title?: string | null;
+  }[];
   user: { id: string; name: string; image: string | null } | null;
   space: {
     name: string;
@@ -50,6 +55,8 @@ export type PollParticipant = {
   hidden: boolean;
   /** The response's edit link; only the host's list carries it. */
   editUrl: string | null;
+  group?: { id: string; name: string } | null;
+  userGroups?: { id: string; name: string }[];
 };
 
 export type PollComment = {

@@ -110,6 +110,7 @@ export const polls = router({
           .object({
             startDate: z.string(),
             endDate: z.string().optional(),
+            title: z.string().optional(),
           })
           .array()
           .min(1),
@@ -179,6 +180,7 @@ export const polls = router({
         duration: option.endDate
           ? dayjs(option.endDate).diff(dayjs(option.startDate), "minute")
           : 0,
+        title: option.title || undefined,
       }));
 
       const kind = isTimePoll ? "time" : "date";

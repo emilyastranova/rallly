@@ -715,7 +715,7 @@ export async function getPollDetails({
       spaceId: true,
       deleted: true,
       options: {
-        select: { id: true, startTime: true, duration: true },
+        select: { id: true, startTime: true, duration: true, title: true },
         orderBy: { startTime: "asc" },
       },
       user: { select: { id: true, name: true, image: true, banned: true } },
@@ -810,16 +810,30 @@ export async function listPollParticipants({ pollId }: { pollId: string }) {
       note: true,
       token: true,
       createdAt: true,
+      groupId: true,
+      group: { select: { id: true, name: true } },
       votes: { select: { optionId: true, type: true } },
-      user: { select: { image: true } },
+      user: {
+        select: {
+          image: true,
+          primaryGroupId: true,
+          primaryGroup: { select: { id: true, name: true } },
+          groups: { select: { id: true, name: true } },
+        },
+      },
     },
     orderBy: [{ createdAt: "desc" }, { name: "desc" }],
   });
 
-  return participants.map(({ user, ...participant }) => ({
-    ...participant,
-    image: user?.image ?? null,
-  }));
+  return participants.map(({ user, group, ...participant }) => {
+    const effectiveGroup = group ?? user?.primaryGroup ?? null;
+    return {
+      ...participant,
+      image: user?.image ?? null,
+      group: effectiveGroup,
+      userGroups: user?.groups ?? [],
+    };
+  });
 }
 
 export async function listPollComments({

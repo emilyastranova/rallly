@@ -21,6 +21,7 @@ export interface ParsedDateOption {
   dow: string;
   month: string;
   year: string;
+  title?: string | null;
 }
 
 export interface ParsedTimeSlotOption {
@@ -33,6 +34,7 @@ export interface ParsedTimeSlotOption {
   endTime: string;
   duration: string;
   year: string;
+  title?: string | null;
 }
 
 export type ParsedDateTimeOpton = ParsedDateOption | ParsedTimeSlotOption;

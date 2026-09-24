@@ -32,21 +32,19 @@ export async function getAccountDeletionSummary({
   userId: string;
   timeZone: string;
 }) {
-  const [activePollCount, upcomingEventCount, activeSubscriptionCount] =
-    await Promise.all([
-      prisma.poll.count({ where: { userId, deleted: false, status: "open" } }),
-      prisma.scheduledEvent.count({
-        where: {
-          userId,
-          ...upcomingScheduledEventWhere({ now: new Date(), timeZone }),
-        },
-      }),
-      prisma.subscription.count({ where: { userId, active: true } }),
-    ]);
+  const [activePollCount, upcomingEventCount] = await Promise.all([
+    prisma.poll.count({ where: { userId, deleted: false, status: "open" } }),
+    prisma.scheduledEvent.count({
+      where: {
+        userId,
+        ...upcomingScheduledEventWhere({ now: new Date(), timeZone }),
+      },
+    }),
+  ]);
 
   return {
     activePollCount,
     upcomingEventCount,
-    hasActiveSubscription: activeSubscriptionCount > 0,
+    hasActiveSubscription: false,
   };
 }

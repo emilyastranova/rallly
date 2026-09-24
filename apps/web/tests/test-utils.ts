@@ -63,36 +63,15 @@ export async function createUserInDb({
  */
 export async function upgradeSpaceToPro({
   spaceId,
-  userId,
-  seats,
 }: {
   spaceId: string;
-  userId: string;
-  seats: number;
+  userId?: string;
+  seats?: number;
 }) {
-  await prisma.$transaction([
-    prisma.space.update({
-      where: { id: spaceId },
-      data: { tier: "pro" },
-    }),
-    prisma.subscription.create({
-      data: {
-        id: `sub_test_${spaceId}`,
-        priceId: "price_test",
-        quantity: seats,
-        subscriptionItemId: `si_test_${spaceId}`,
-        amount: 700 * seats,
-        status: "active",
-        active: true,
-        currency: "USD",
-        interval: "month",
-        periodStart: new Date(),
-        periodEnd: dayjs().add(1, "month").toDate(),
-        userId,
-        spaceId,
-      },
-    }),
-  ]);
+  await prisma.space.update({
+    where: { id: spaceId },
+    data: { tier: "pro" },
+  });
 }
 
 export async function createSpaceInDb({

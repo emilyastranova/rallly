@@ -122,6 +122,12 @@ export function SpaceSidebarMenu() {
       icon: <BoltIcon />,
       href: "/settings/general",
     },
+    {
+      id: "groups",
+      label: t("groups", { defaultValue: "Groups / Subteams" }),
+      icon: <UsersIcon />,
+      href: "/settings/groups",
+    },
     // The members page is a management surface; members meet the roster
     // through in-context pickers instead.
     ...(isAdmin

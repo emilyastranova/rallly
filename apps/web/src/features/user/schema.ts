@@ -41,6 +41,9 @@ export type UserDTO = {
   locale?: string;
   weekStart?: number;
   customerId?: string;
+  primaryGroupId?: string;
+  primaryGroup?: { id: string; name: string };
+  groups?: { id: string; name: string }[];
   // Only populated on database-derived DTOs (createUserDTO); deletedAt and
   // emailVerified are deliberately not part of the session user object.
   deletedAt?: Date;

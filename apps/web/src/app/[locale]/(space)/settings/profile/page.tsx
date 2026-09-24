@@ -18,6 +18,8 @@ import {
   SettingsPageHeader,
   SettingsPageTitle,
 } from "@/components/settings-layout";
+import { loadGroups, loadUserGroups } from "@/features/groups/loaders";
+import { loadActiveSpace } from "@/features/space/loaders";
 import { loadOptionalUser } from "@/features/user/loaders";
 import { Trans } from "@/i18n/client";
 import { getTranslation } from "@/i18n/server";
@@ -33,6 +35,7 @@ import {
 } from "./components/delete-account-setting";
 import { EmailAddressSetting } from "./components/email-address-setting";
 import { ProfileSettings } from "./components/profile-settings";
+import { UserGroupSettings } from "./components/user-group-settings";
 
 export default async function Page() {
   // Read from the database — the pending deletion notice depends on
@@ -47,6 +50,12 @@ export default async function Page() {
       }),
     );
   }
+
+  const space = await loadActiveSpace().catch(() => null);
+  const [groups, userGroups] = await Promise.all([
+    loadGroups({ spaceId: space?.id }),
+    loadUserGroups({ userId: user.id }),
+  ]);
 
   return (
     <SettingsPage>
@@ -87,6 +96,12 @@ export default async function Page() {
               </FieldGroup>
             </PageSectionContent>
           </PageSection>
+
+          <UserGroupSettings
+            availableGroups={groups}
+            initialPrimaryGroupId={userGroups.primaryGroupId}
+            initialGroupIds={userGroups.groups.map((g) => g.id)}
+          />
 
           <PageSection variant="card">
             <PageSectionHeader>

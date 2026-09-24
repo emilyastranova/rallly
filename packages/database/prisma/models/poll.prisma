@@ -82,6 +82,7 @@ model Participant {
   token     String    @unique
   userId    String?   @map("user_id")
   pollId    String    @map("poll_id")
+  groupId   String?   @map("group_id")
   locale    String?
   timeZone  String?   @map("time_zone")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -90,11 +91,13 @@ model Participant {
   votes  Vote[]
   invite PollInvite?
 
-  poll Poll  @relation(fields: [pollId], references: [id], onDelete: Cascade)
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  poll  Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@index([pollId], type: Hash)
   @@index([userId])
+  @@index([groupId])
   @@map("participants")
 }
 
@@ -152,6 +155,7 @@ model Option {
   startTime DateTime @map("start_time") @db.Timestamp(0)
   duration  Int      @default(0) @map("duration_minutes")
   pollId    String   @map("poll_id")
+  title     String?  @map("title")
   createdAt DateTime @default(now()) @map("created_at")
 
   votes Vote[]

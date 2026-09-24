@@ -1,12 +1,14 @@
 export type DateOption = {
   type: "date";
   date: string;
+  title?: string;
 };
 
 export type TimeOption = {
   type: "timeSlot";
   start: string;
   end: string;
+  title?: string;
 };
 
 export type DateTimeOption = DateOption | TimeOption;

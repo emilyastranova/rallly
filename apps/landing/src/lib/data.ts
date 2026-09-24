@@ -1,12 +1,12 @@
 import "server-only";
-import type { PricesByCurrency } from "@rallly/billing";
+import { prisma } from "@rallly/database";
+import { cacheLife } from "next/cache";
+import type { PricesByCurrency } from "@/lib/billing-types";
 import {
   createStripeClient,
   getProPricing,
   pricingData,
-} from "@rallly/billing";
-import { prisma } from "@rallly/database";
-import { cacheLife } from "next/cache";
+} from "@/lib/billing-types";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -39,6 +39,8 @@ const fallbackPricing: PricesByCurrency = {
   [pricingData.monthly.currency]: {
     monthly: pricingData.monthly.amount,
     yearly: pricingData.yearly.amount,
+    monthlyPerMonth: pricingData.monthly.amount,
+    yearlyPerMonth: Math.round(pricingData.yearly.amount / 12),
   },
 };
 

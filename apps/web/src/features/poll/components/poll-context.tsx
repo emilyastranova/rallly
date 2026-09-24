@@ -124,7 +124,12 @@ export function createOptionsContextValue({
   timeZone,
   timeFormat,
 }: {
-  pollOptions: { id: string; startTime: Date; duration: number }[];
+  pollOptions: {
+    id: string;
+    startTime: Date;
+    duration: number;
+    title?: string | null;
+  }[];
   /**
    * The poll's zone: set means options are fixed instants shown in the
    * viewer's zone; null means floating times shown as stored.
@@ -176,6 +181,7 @@ export function createOptionsContextValue({
           day: parts.day,
           dow: parts.weekday,
           year: parts.year,
+          title: option.title,
         } satisfies ParsedTimeSlotOption;
       }),
     };
@@ -197,6 +203,7 @@ export function createOptionsContextValue({
           day: parts.day,
           dow: parts.weekday,
           year: parts.year,
+          title: option.title,
         } satisfies ParsedDateOption;
       }),
     };
