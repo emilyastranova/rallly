@@ -18,6 +18,8 @@ import {
   ArrowRightIcon,
   CalendarIcon,
   ExpandIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
   PlusIcon,
   ShrinkIcon,
   Users2Icon,
@@ -41,6 +43,7 @@ import {
   usePermissions,
   usePoll,
 } from "@/features/poll/client";
+import { ParticipantDropdown } from "@/features/poll/components/participant-dropdown";
 import { useOptions } from "@/features/poll/components/poll-context";
 import { ConnectedScoreSummary } from "@/features/poll/components/score-summary";
 import { useVisibleParticipants } from "@/features/poll/components/visibility";
@@ -216,8 +219,6 @@ const DesktopPoll: React.FunctionComponent = () => {
   const [measureRef, { height }] = useMeasure<HTMLDivElement>();
 
   const [didScroll, setDidScroll] = React.useState(false);
-
-  const { canAddNewParticipant } = usePermissions();
   const [expanded, setExpanded] = React.useState(false);
 
   const expand = React.useCallback(() => {
@@ -241,6 +242,14 @@ const DesktopPoll: React.FunctionComponent = () => {
 
   const { participants } = useParticipants();
   const visibleParticipants = useVisibleParticipants();
+  const { canAddNewParticipant, canEditParticipant } = usePermissions();
+
+  const myParticipant = React.useMemo(() => {
+    return participants.find(
+      (p) =>
+        (user.user?.id && p.userId === user.user.id) || user.ownsObject(p),
+    );
+  }, [user, participants]);
 
   const [selectedGroupId, setSelectedGroupId] = React.useState<string>("all");
 
@@ -441,7 +450,21 @@ const DesktopPoll: React.FunctionComponent = () => {
                   <Trans i18nKey="participants" />
                 </CardTitle>
                 <Badge>{filteredParticipants.length}</Badge>
-                {canAddNewParticipant && mode !== "new" ? (
+                {myParticipant && mode === "view" ? (
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="xs"
+                    onClick={() => {
+                      votingForm.setEditingParticipantId(myParticipant.id);
+                    }}
+                    className="ml-1 h-7 gap-1 px-2.5 text-xs font-medium"
+                  >
+                    <PencilIcon className="size-3 text-muted-foreground" />
+                    <span>Edit your vote</span>
+                  </Button>
+                ) : null}
+                {canAddNewParticipant && mode !== "new" && !myParticipant ? (
                   <Button
                     aria-label={t("addParticipant", {
                       defaultValue: "Add participant",
@@ -642,6 +665,9 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   mode === "edit" &&
                                   editingParticipantId === participant.id;
                                 const isYou = user.ownsObject(participant);
+                                const canEdit = canEditParticipant(
+                                  participant.id,
+                                );
 
                                 return (
                                   <th
@@ -653,11 +679,21 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       "sticky top-7 z-25 h-44 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
                                       isEditingThis &&
                                         "border-primary bg-primary/10",
+                                      canEdit &&
+                                        mode === "view" &&
+                                        "cursor-pointer hover:bg-muted/40",
                                     )}
+                                    onClick={() => {
+                                      if (canEdit && mode === "view") {
+                                        votingForm.setEditingParticipantId(
+                                          participant.id,
+                                        );
+                                      }
+                                    }}
                                   >
                                     <div className="relative h-full w-full overflow-visible">
                                       <div
-                                        className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
+                                        className="absolute bottom-5 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                         style={{
                                           left: "14px",
                                           transformOrigin: "12px 12px",
@@ -693,6 +729,42 @@ const DesktopPoll: React.FunctionComponent = () => {
                                           </Badge>
                                         ) : null}
                                       </div>
+
+                                      {canEdit ? (
+                                        <div
+                                          className="absolute bottom-0.5 right-0 left-0 z-30 flex justify-center"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <ParticipantDropdown
+                                            participant={{
+                                              id: participant.id,
+                                              name: participant.name,
+                                              userId:
+                                                participant.userId ?? undefined,
+                                              email:
+                                                participant.email ?? undefined,
+                                              editUrl: participant.editUrl,
+                                            }}
+                                            align="start"
+                                            onEdit={() =>
+                                              votingForm.setEditingParticipantId(
+                                                participant.id,
+                                              )
+                                            }
+                                          >
+                                            <Button
+                                              size="icon-xs"
+                                              variant="ghost"
+                                              className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+                                              aria-label={t("moreOptions", {
+                                                defaultValue: "More options",
+                                              })}
+                                            >
+                                              <MoreHorizontalIcon className="size-3" />
+                                            </Button>
+                                          </ParticipantDropdown>
+                                        </div>
+                                      ) : null}
                                     </div>
                                   </th>
                                 );
@@ -813,6 +885,9 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       const isEditingThis =
                                         mode === "edit" &&
                                         editingParticipantId === participant.id;
+                                      const canEdit = canEditParticipant(
+                                        participant.id,
+                                      );
 
                                       const vote = participant.votes.find(
                                         (v) => v.optionId === option.optionId,
@@ -847,7 +922,24 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       ) : (
                                         <td
                                           key={participant.id}
-                                          className="h-12 w-[52px] min-w-[52px] max-w-[52px] border-border border-b border-l bg-card text-center"
+                                          className={cn(
+                                            "h-12 w-[52px] min-w-[52px] max-w-[52px] border-border border-b border-l bg-card text-center transition-colors",
+                                            canEdit &&
+                                              mode === "view" &&
+                                              "cursor-pointer hover:bg-muted/40",
+                                          )}
+                                          onClick={() => {
+                                            if (canEdit && mode === "view") {
+                                              votingForm.setEditingParticipantId(
+                                                participant.id,
+                                              );
+                                            }
+                                          }}
+                                          title={
+                                            canEdit && mode === "view"
+                                              ? "Click to edit your vote"
+                                              : undefined
+                                          }
                                         >
                                           <div className="flex items-center justify-center">
                                             <VoteIcon type={vote} />
@@ -960,8 +1052,8 @@ const DesktopPoll: React.FunctionComponent = () => {
                   </EmptyStateDescription>
                 </EmptyState>
               )}
-              {mode === "new" ? (
-                <div className="border-t p-3">
+              {mode !== "view" ? (
+                <div className="sticky bottom-0 z-30 border-t bg-card p-3 shadow-md">
                   <VotingFooter />
                 </div>
               ) : null}

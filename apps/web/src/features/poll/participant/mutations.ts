@@ -179,6 +179,68 @@ export async function addParticipant({
         throw new WriteRefusedError("full");
       }
 
+      // If user already has a participant in this poll, update it instead of creating a duplicate
+      if (userId) {
+        const existing = await tx.participant.findFirst({
+          where: { pollId, userId },
+          select: { id: true },
+        });
+
+        if (existing) {
+          await tx.vote.deleteMany({
+            where: { participantId: existing.id },
+          });
+
+          await tx.vote.createMany({
+            data: validVotes.map(({ optionId, type }) => ({
+              pollId,
+              participantId: existing.id,
+              optionId,
+              type,
+            })),
+          });
+
+          const updatedParticipant = await tx.participant.update({
+            where: { id: existing.id },
+            data: { name, email, note, timeZone },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              note: true,
+              token: true,
+              poll: {
+                select: {
+                  id: true,
+                  title: true,
+                  allowTentativeVotes: true,
+                  space: {
+                    select: {
+                      id: true,
+                      tier: true,
+                      showBranding: true,
+                      hideAttribution: true,
+                      primaryColor: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const { poll, ...participantFields } = updatedParticipant;
+
+          return {
+            participant: participantFields,
+            poll,
+            editToken: updatedParticipant.token,
+            viaInvite: false,
+            totalResponses: participantCount,
+          };
+        }
+      }
+
       // A response answering an emailed invite takes the invite's token, so
       // the link the invitee already holds names it.
       const invite = token
