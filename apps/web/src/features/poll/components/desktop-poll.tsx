@@ -630,7 +630,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                 maxWidth: 165,
                                 width: 165,
                               }}
-                              className="sticky top-0 left-0 z-40 border-border border-b bg-card px-2.5 py-1.5 text-left align-bottom"
+                              className="sticky top-0 left-0 z-40 border-border border-r border-b bg-card px-2.5 py-1.5 text-left align-bottom"
                             >
                               <div className="flex flex-col gap-0.5 pb-1">
                                 <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
@@ -871,7 +871,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                         maxWidth: 165,
                                         width: 165,
                                       }}
-                                      className="sticky left-0 z-10 border-border border-b bg-card px-2.5 py-1.5"
+                                      className="sticky left-0 z-10 border-border border-r border-b bg-card px-2.5 py-1.5"
                                     >
                                       <div className="flex items-center justify-between gap-1.5">
                                         <div className="flex min-w-0 flex-col">
