@@ -11,9 +11,21 @@ export async function createGroup({
   description?: string;
   spaceId?: string;
 }) {
+  const trimmed = name.trim();
+  const existing = await prisma.group.findFirst({
+    where: {
+      name: { equals: trimmed, mode: "insensitive" },
+      spaceId: spaceId ?? null,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
   return prisma.group.create({
     data: {
-      name,
+      name: trimmed,
       description,
       spaceId,
     },

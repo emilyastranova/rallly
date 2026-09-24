@@ -5,7 +5,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@rallly/ui/alert";
-import { InfoIcon, ShieldXIcon, SparklesIcon } from "lucide-react";
+import { InfoIcon, ShieldXIcon } from "lucide-react";
 import {
   EmptyState,
   EmptyStateDescription,
@@ -182,20 +182,6 @@ export async function MembersPageContent() {
             </Alert>
           ) : null}
         </IfFeatureEnabled>
-        {!canInviteMembers && !hasInactiveMembers ? (
-          <Alert variant="primary">
-            <SparklesIcon />
-            <AlertDescription>
-              <Trans
-                i18nKey="inviteMembersUpsellDescription"
-                defaults="Invite members to manage polls and events together in this space."
-              />
-            </AlertDescription>
-            <AlertAction>
-              <UpgradeToProButton action="invite" variant="link" />
-            </AlertAction>
-          </Alert>
-        ) : null}
       </div>
       <MembersList
         rows={members.map((member) => ({

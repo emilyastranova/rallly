@@ -1,5 +1,2 @@
-import { env } from "@/env";
-
-export const isStorageEnabled = Boolean(
-  env.S3_BUCKET_NAME && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY,
-);
+// Storage is always enabled: uses S3 when configured, or local filesystem storage fallback
+export const isStorageEnabled = true;

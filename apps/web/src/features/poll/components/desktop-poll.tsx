@@ -231,18 +231,24 @@ const DesktopPoll: React.FunctionComponent = () => {
   const [selectedGroupId, setSelectedGroupId] = React.useState<string>("all");
 
   const availableGroups = React.useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, { id: string; name: string }>();
     for (const p of participants) {
       if (p.group) {
-        map.set(p.group.id, p.group.name);
+        map.set(p.group.name.trim().toLowerCase(), {
+          id: p.group.id,
+          name: p.group.name,
+        });
       }
       if (p.userGroups) {
         for (const ug of p.userGroups) {
-          map.set(ug.id, ug.name);
+          map.set(ug.name.trim().toLowerCase(), {
+            id: ug.id,
+            name: ug.name,
+          });
         }
       }
     }
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+    return Array.from(map.values());
   }, [participants]);
 
   const filteredParticipants = React.useMemo(() => {
@@ -382,7 +388,17 @@ const DesktopPoll: React.FunctionComponent = () => {
                     >
                       <SelectTrigger className="h-7 gap-1.5 border-border bg-card px-2.5 text-xs">
                         <Users2Icon className="size-3.5 text-muted-foreground" />
-                        <SelectValue placeholder="All Groups" />
+                        <SelectValue placeholder="All Groups">
+                          {(selected: string | null | undefined) => {
+                            if (!selected || selected === "all")
+                              return "All Groups";
+                            if (selected === "none") return "Ungrouped";
+                            return (
+                              availableGroups.find((g) => g.id === selected)
+                                ?.name ?? selected
+                            );
+                          }}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Groups</SelectItem>

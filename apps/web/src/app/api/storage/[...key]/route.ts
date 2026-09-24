@@ -11,30 +11,49 @@ import { getS3Client } from "@/lib/storage/s3";
 
 const logger = createLogger("api/storage");
 
+const MIME_MAP: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  svg: "image/svg+xml",
+  webp: "image/webp",
+  gif: "image/gif",
+};
+
 async function getAvatar(key: string) {
   const s3Client = getS3Client();
 
-  if (!s3Client) {
-    throw new Error("S3 client not initialized");
+  if (s3Client) {
+    const command = new GetObjectCommand({
+      Bucket: env.S3_BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+
+    if (!response.Body) {
+      throw new Error("Object not found");
+    }
+
+    const arrayBuffer = await response.Body.transformToByteArray();
+    const buffer = Buffer.from(arrayBuffer);
+
+    return {
+      buffer,
+      contentType: response.ContentType || "application/octet-stream",
+    };
   }
 
-  const command = new GetObjectCommand({
-    Bucket: env.S3_BUCKET_NAME,
-    Key: key,
-  });
-
-  const response = await s3Client.send(command);
-
-  if (!response.Body) {
-    throw new Error("Object not found");
-  }
-
-  const arrayBuffer = await response.Body.transformToByteArray();
-  const buffer = Buffer.from(arrayBuffer);
+  // Fallback to local filesystem storage
+  const fsp = await import("node:fs/promises");
+  const pathModule = await import("node:path");
+  const filePath = pathModule.join(process.cwd(), "public/uploads", key);
+  const buffer = await fsp.readFile(filePath);
+  const ext = pathModule.extname(key).replace(/^\./, "").toLowerCase();
 
   return {
     buffer,
-    contentType: response.ContentType || "application/octet-stream",
+    contentType: MIME_MAP[ext] || "application/octet-stream",
   };
 }
 
@@ -54,11 +73,6 @@ export async function GET(
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",
-        // Uploads are served from the app origin. The sandbox neutralizes
-        // scripts in SVGs when the file is opened directly; it does not
-        // apply to <img> subresource loads, so rendering is unaffected.
-        // frame-ancestors is carried over from the global header, which
-        // excludes this path so it can't override the sandbox directive.
         "Content-Security-Policy": "sandbox; frame-ancestors 'none'",
         "X-Content-Type-Options": "nosniff",
       },
@@ -93,9 +107,6 @@ export async function PUT(
     return new NextResponse("Invalid token", { status: 401 });
   }
 
-  // The signed key was produced from a profile, so the profile decides which
-  // content type and size this PUT may carry — without this, any signed URL
-  // (e.g. an avatar's) could store an SVG
   const parsedKey = parseAssetKey(key, assetProfiles);
 
   if (!parsedKey) {
@@ -119,12 +130,6 @@ export async function PUT(
     return new NextResponse("Invalid content length", { status: 413 });
   }
 
-  const s3Client = getS3Client();
-
-  if (!s3Client) {
-    return new NextResponse("Storage not configured", { status: 500 });
-  }
-
   const arrayBuffer = await req.arrayBuffer();
 
   if (arrayBuffer.byteLength > maxUploadBytes) {
@@ -135,22 +140,41 @@ export async function PUT(
     return new NextResponse("Content length mismatch", { status: 400 });
   }
 
-  try {
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: env.S3_BUCKET_NAME,
-        Key: key,
-        ContentType: contentType,
-        ContentLength: arrayBuffer.byteLength,
-        Body: new Uint8Array(arrayBuffer),
-      }),
-    );
-  } catch (error) {
-    logger.error({ error, key }, "Failed to upload object to storage");
-    return NextResponse.json(
-      { error: "Failed to upload object" },
-      { status: 500 },
-    );
+  const s3Client = getS3Client();
+
+  if (s3Client) {
+    try {
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: env.S3_BUCKET_NAME,
+          Key: key,
+          ContentType: contentType,
+          ContentLength: arrayBuffer.byteLength,
+          Body: new Uint8Array(arrayBuffer),
+        }),
+      );
+    } catch (error) {
+      logger.error({ error, key }, "Failed to upload object to storage");
+      return NextResponse.json(
+        { error: "Failed to upload object" },
+        { status: 500 },
+      );
+    }
+  } else {
+    // Local filesystem storage fallback
+    try {
+      const fsp = await import("node:fs/promises");
+      const pathModule = await import("node:path");
+      const filePath = pathModule.join(process.cwd(), "public/uploads", key);
+      await fsp.mkdir(pathModule.dirname(filePath), { recursive: true });
+      await fsp.writeFile(filePath, Buffer.from(arrayBuffer));
+    } catch (error) {
+      logger.error({ error, key }, "Failed to save object to local storage");
+      return NextResponse.json(
+        { error: "Failed to upload object" },
+        { status: 500 },
+      );
+    }
   }
 
   return new NextResponse(null, { status: 200 });

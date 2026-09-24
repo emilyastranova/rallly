@@ -3,7 +3,7 @@ import "server-only";
 import { prisma } from "@rallly/database";
 
 export async function listGroups({ spaceId }: { spaceId?: string } = {}) {
-  return prisma.group.findMany({
+  const groups = await prisma.group.findMany({
     where: spaceId ? { OR: [{ spaceId }, { spaceId: null }] } : undefined,
     include: {
       _count: {
@@ -15,6 +15,20 @@ export async function listGroups({ spaceId }: { spaceId?: string } = {}) {
     },
     orderBy: { name: "asc" },
   });
+
+  // Deduplicate by lowercase name, preferring space-specific groups over global ones
+  const map = new Map<string, (typeof groups)[number]>();
+  for (const group of groups) {
+    const key = group.name.trim().toLowerCase();
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, group);
+    } else if (!existing.spaceId && group.spaceId) {
+      map.set(key, group);
+    }
+  }
+
+  return Array.from(map.values());
 }
 
 export async function getUserGroups({ userId }: { userId: string }) {

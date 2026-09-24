@@ -53,7 +53,7 @@ export async function createAssetUploadUrl({
 }) {
   const s3Client = getS3Client();
 
-  if (!s3Client) {
+  if (!s3Client && !isSelfHosted) {
     throw new AppError({
       code: "INTERNAL_SERVER_ERROR",
       message: "S3 storage has not been configured",
@@ -89,6 +89,13 @@ export async function createAssetUploadUrl({
       url: `/api/storage/upload/${key}?token=${token}`,
       key,
     };
+  }
+
+  if (!s3Client) {
+    throw new AppError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "S3 storage has not been configured",
+    });
   }
 
   const command = new PutObjectCommand({
@@ -132,12 +139,23 @@ export async function deleteStoredAsset(key: string) {
 
   const s3Client = getS3Client();
 
-  await s3Client?.send(
-    new DeleteObjectCommand({
-      Bucket: env.S3_BUCKET_NAME,
-      Key: key,
-    }),
-  );
+  if (s3Client) {
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: env.S3_BUCKET_NAME,
+        Key: key,
+      }),
+    );
+  } else if (isSelfHosted) {
+    try {
+      const fs = await import("node:fs/promises");
+      const path = await import("node:path");
+      const localPath = path.join(process.cwd(), "public/uploads", key);
+      await fs.unlink(localPath);
+    } catch {
+      // Ignore
+    }
+  }
 }
 
 /**

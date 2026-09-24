@@ -106,7 +106,15 @@ export function UserGroupSettings({
                 onValueChange={handlePrimaryChange}
               >
                 <SelectTrigger className="w-full sm:max-w-xs">
-                  <SelectValue placeholder="Select primary group" />
+                  <SelectValue placeholder="Select primary group">
+                    {(selected: string | null | undefined) => {
+                      if (!selected || selected === "none") return "None";
+                      return (
+                        availableGroups.find((g) => g.id === selected)?.name ??
+                        selected
+                      );
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>

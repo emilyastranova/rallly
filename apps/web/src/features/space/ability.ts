@@ -8,18 +8,17 @@ type Action = "invite" | "schedule" | "duplicate" | "update";
 type Subject = "Member" | "Poll" | "AdvancedPollSettings";
 
 export type SpaceAbilityContext = {
-  tier: SpaceTier;
+  tier?: SpaceTier;
 };
 export type SpaceAbility = PureAbility<[Action, Subject], PrismaQuery>;
 
-export function defineAbilityForSpace(context?: SpaceAbilityContext) {
+export function defineAbilityForSpace(_context?: SpaceAbilityContext) {
   const { can, build } = new AbilityBuilder<SpaceAbility>(createPrismaAbility);
 
-  if (context?.tier === "pro") {
-    can("invite", "Member");
-    can(["schedule", "duplicate"], "Poll");
-    can("update", "AdvancedPollSettings");
-  }
+  // In this libre edition, all spaces have full Pro capabilities:
+  can("invite", "Member");
+  can(["schedule", "duplicate"], "Poll");
+  can("update", "AdvancedPollSettings");
 
   return build();
 }

@@ -59,7 +59,7 @@ export function createSpaceDTO({
     id: space.id as AuthorizedSpaceId,
     name: space.name,
     ownerId: space.ownerId,
-    tier: resolveSpaceTier(space.tier),
+    tier: "pro",
     role: fromDBRole(space.role),
     // Coerced at read time: migrations are shared with cloud, so the column
     // cannot be backfilled per deployment. Every reader of `shared` must go
@@ -87,7 +87,7 @@ export function isSpaceBrandingActive({
   showBranding,
   spaceBrandingAllowed,
 }: {
-  tier: SpaceTier;
+  tier?: SpaceTier;
   showBranding: boolean;
   spaceBrandingAllowed: boolean;
 }) {
@@ -106,7 +106,7 @@ export function isSpaceAttributionHidden({
   hideAttribution,
   spaceAttributionConfigurable,
 }: {
-  tier: SpaceTier;
+  tier?: SpaceTier;
   hideAttribution: boolean;
   spaceAttributionConfigurable: boolean;
 }) {

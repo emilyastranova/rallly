@@ -31,6 +31,7 @@ import {
   isTemporaryEmail,
 } from "@/features/auth/utils";
 import { isRegistrationOpen } from "@/features/instance-settings/data";
+import { isInitialAdmin } from "@/features/instance-settings/utils";
 import { getUserLocaleByEmail } from "@/features/user/data";
 import type { UserDTO } from "@/features/user/schema";
 import { jobTitleFieldSchema } from "@/features/user/schema";
@@ -652,13 +653,27 @@ export const getSessionState = cache(async (): Promise<SessionState> => {
     });
 
     if (session) {
+      let role: "admin" | "user" =
+        session.user.role === "admin" ? "admin" : "user";
+      if (role !== "admin" && isInitialAdmin(session.user.email)) {
+        role = "admin";
+        after(() => {
+          prisma.user
+            .update({
+              where: { id: session.user.id },
+              data: { role: "admin" },
+            })
+            .catch(() => {});
+        });
+      }
+
       const user: UserDTO = {
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
         isGuest: !!session.user.isAnonymous,
         image: session.user.image ?? undefined,
-        role: session.user.role === "admin" ? "admin" : "user",
+        role,
         banned: !!session.user.banned,
         locale: session.user.locale ?? undefined,
         timeZone: session.user.timeZone || undefined,
