@@ -10,6 +10,7 @@ import {
   FieldLabel,
 } from "@rallly/ui/field";
 import { FormField } from "@rallly/ui/form";
+import { Input } from "@rallly/ui/input";
 import {
   Select,
   SelectContent,
@@ -41,11 +42,23 @@ import { Trans } from "@/i18n/client";
  * because that one always sets a <title>, which screen readers would announce
  * on top of the name beside it ("Yes Yes, If need be If need be").
  */
-function VoteOptionLabel({ types }: { types: VoteType[] }) {
+function VoteOptionLabel({
+  types,
+  yesLabel,
+  ifNeedBeLabel,
+  noLabel,
+}: {
+  types: VoteType[];
+  yesLabel?: string;
+  ifNeedBeLabel?: string;
+  noLabel?: string;
+}) {
   const labels: Record<VoteType, React.ReactNode> = {
-    yes: <Trans i18nKey="yes" defaults="Yes" />,
-    ifNeedBe: <Trans i18nKey="ifNeedBe" defaults="If need be" />,
-    no: <Trans i18nKey="no" defaults="No" />,
+    yes: yesLabel || <Trans i18nKey="yes" defaults="Yes" />,
+    ifNeedBe: ifNeedBeLabel || (
+      <Trans i18nKey="ifNeedBe" defaults="If need be" />
+    ),
+    no: noLabel || <Trans i18nKey="no" defaults="No" />,
   };
 
   return (
@@ -289,9 +302,20 @@ export const PollSettingsForm = ({
                     <Select
                       items={{
                         yesIfNeedBeNo: (
-                          <VoteOptionLabel types={["yes", "ifNeedBe", "no"]} />
+                          <VoteOptionLabel
+                            types={["yes", "ifNeedBe", "no"]}
+                            yesLabel={form.watch("yesLabel")}
+                            ifNeedBeLabel={form.watch("ifNeedBeLabel")}
+                            noLabel={form.watch("noLabel")}
+                          />
                         ),
-                        yesNo: <VoteOptionLabel types={["yes", "no"]} />,
+                        yesNo: (
+                          <VoteOptionLabel
+                            types={["yes", "no"]}
+                            yesLabel={form.watch("yesLabel")}
+                            noLabel={form.watch("noLabel")}
+                          />
+                        ),
                       }}
                       disabled={isLocked}
                       value={field.value ? "yesIfNeedBeNo" : "yesNo"}
@@ -311,10 +335,19 @@ export const PollSettingsForm = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="yesIfNeedBeNo">
-                          <VoteOptionLabel types={["yes", "ifNeedBe", "no"]} />
+                          <VoteOptionLabel
+                            types={["yes", "ifNeedBe", "no"]}
+                            yesLabel={form.watch("yesLabel")}
+                            ifNeedBeLabel={form.watch("ifNeedBeLabel")}
+                            noLabel={form.watch("noLabel")}
+                          />
                         </SelectItem>
                         <SelectItem value="yesNo">
-                          <VoteOptionLabel types={["yes", "no"]} />
+                          <VoteOptionLabel
+                            types={["yes", "no"]}
+                            yesLabel={form.watch("yesLabel")}
+                            noLabel={form.watch("noLabel")}
+                          />
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -323,6 +356,84 @@ export const PollSettingsForm = ({
               );
             }}
           />
+
+          <div className="space-y-2 border-border/60 border-t pt-3 pl-9">
+            <div className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Custom Vote Verbiage
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <FormField
+                control={form.control}
+                name="yesLabel"
+                render={({ field }) => (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="yes-label-input"
+                      className="flex items-center gap-1.5 font-medium text-foreground text-xs"
+                    >
+                      <VoteIcon type="yes" />
+                      <span>"Yes" wording</span>
+                    </label>
+                    <Input
+                      id="yes-label-input"
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="Yes (e.g. Available)"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                )}
+              />
+
+              {form.watch("allowTentativeVotes") ? (
+                <FormField
+                  control={form.control}
+                  name="ifNeedBeLabel"
+                  render={({ field }) => (
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="if-need-be-label-input"
+                        className="flex items-center gap-1.5 font-medium text-foreground text-xs"
+                      >
+                        <VoteIcon type="ifNeedBe" />
+                        <span>"If need be" wording</span>
+                      </label>
+                      <Input
+                        id="if-need-be-label-input"
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="If need be (e.g. Tentative)"
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  )}
+                />
+              ) : null}
+
+              <FormField
+                control={form.control}
+                name="noLabel"
+                render={({ field }) => (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="no-label-input"
+                      className="flex items-center gap-1.5 font-medium text-foreground text-xs"
+                    >
+                      <VoteIcon type="no" />
+                      <span>"No" wording</span>
+                    </label>
+                    <Input
+                      id="no-label-input"
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="No (e.g. Unavailable)"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                )}
+              />
+            </div>
+          </div>
         </FieldGroup>
       </CardContent>
       {children}

@@ -2,6 +2,7 @@ import type { VoteType } from "@rallly/database";
 import { buttonVariants, cn } from "@rallly/ui";
 import * as React from "react";
 
+import { usePoll } from "@/features/poll/client";
 import { getVoteTypes } from "@/features/poll/constants";
 import { useTranslation } from "@/i18n/client";
 
@@ -55,15 +56,18 @@ export const VoteSelector = React.forwardRef<
   ref,
 ) {
   const { t } = useTranslation();
+  const poll = usePoll();
 
   const voteLabel = (() => {
     switch (value) {
       case "yes":
-        return t("yes", { defaultValue: "Yes" });
+        return poll?.yesLabel || t("yes", { defaultValue: "Yes" });
       case "ifNeedBe":
-        return t("ifNeedBe", { defaultValue: "If need be" });
+        return (
+          poll?.ifNeedBeLabel || t("ifNeedBe", { defaultValue: "If need be" })
+        );
       case "no":
-        return t("no", { defaultValue: "No" });
+        return poll?.noLabel || t("no", { defaultValue: "No" });
       default:
         return t("pending", { defaultValue: "Pending" });
     }

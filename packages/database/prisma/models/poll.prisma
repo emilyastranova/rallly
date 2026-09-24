@@ -55,6 +55,9 @@ model Poll {
   /// negative. Turning it off only blocks new tentative votes; existing ones
   /// are kept and stay visible.
   allowTentativeVotes     Boolean           @default(true) @map("allow_tentative_votes")
+  yesLabel                String?           @map("yes_label")
+  ifNeedBeLabel           String?           @map("if_need_be_label")
+  noLabel                 String?           @map("no_label")
   muted                   Boolean           @default(false)
 
   user           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -39,6 +39,9 @@ const Page = () => {
       enableComments: !poll.disableComments,
       allowTentativeVotes: poll.allowTentativeVotes,
       requireParticipantEmail: poll.requireParticipantEmail,
+      yesLabel: poll.yesLabel ?? "",
+      ifNeedBeLabel: poll.ifNeedBeLabel ?? "",
+      noLabel: poll.noLabel ?? "",
     },
   });
 

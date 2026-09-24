@@ -5,6 +5,7 @@ import {
   SegmentedControlItem,
 } from "@rallly/ui/segmented-control";
 
+import { usePoll } from "@/features/poll/client";
 import { getVoteTypes } from "@/features/poll/constants";
 import { useTranslation } from "@/i18n/client";
 
@@ -32,12 +33,14 @@ export const VoteSegmentedControl = ({
   optionLabel?: string;
 }) => {
   const { t } = useTranslation();
+  const poll = usePoll();
   const voteTypes = getVoteTypes(allowTentativeVotes);
 
   const voteLabels: Record<VoteType, string> = {
-    yes: t("yes", { defaultValue: "Yes" }),
-    ifNeedBe: t("ifNeedBe", { defaultValue: "If need be" }),
-    no: t("no", { defaultValue: "No" }),
+    yes: poll?.yesLabel || t("yes", { defaultValue: "Yes" }),
+    ifNeedBe:
+      poll?.ifNeedBeLabel || t("ifNeedBe", { defaultValue: "If need be" }),
+    no: poll?.noLabel || t("no", { defaultValue: "No" }),
   };
 
   return (

@@ -106,6 +106,9 @@ export const polls = router({
         disableComments: z.boolean().optional(),
         allowTentativeVotes: z.boolean().optional(),
         requireParticipantEmail: z.boolean().optional(),
+        yesLabel: z.string().trim().nullable().optional(),
+        ifNeedBeLabel: z.string().trim().nullable().optional(),
+        noLabel: z.string().trim().nullable().optional(),
         options: z
           .object({
             startDate: z.string(),
@@ -212,6 +215,9 @@ export const polls = router({
             allowTentativeVotes: input.allowTentativeVotes,
             hideScores: input.hideScores,
             requireParticipantEmail: input.requireParticipantEmail,
+            yesLabel: input.yesLabel,
+            ifNeedBeLabel: input.ifNeedBeLabel,
+            noLabel: input.noLabel,
             spaceId,
           },
         });
@@ -318,6 +324,9 @@ export const polls = router({
         allowTentativeVotes: z.boolean().optional(),
         hideScores: z.boolean().optional(),
         requireParticipantEmail: z.boolean().optional(),
+        yesLabel: z.string().trim().nullable().optional(),
+        ifNeedBeLabel: z.string().trim().nullable().optional(),
+        noLabel: z.string().trim().nullable().optional(),
       }),
     )
     .use(requireUserMiddleware)
@@ -508,6 +517,9 @@ export const polls = router({
             disableComments: input.disableComments,
             allowTentativeVotes: input.allowTentativeVotes,
             requireParticipantEmail: input.requireParticipantEmail,
+            yesLabel: input.yesLabel,
+            ifNeedBeLabel: input.ifNeedBeLabel,
+            noLabel: input.noLabel,
             kind,
           },
         });

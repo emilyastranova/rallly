@@ -16,6 +16,7 @@ import {
   ArrowLeftIcon,
   ArrowLeftRightIcon,
   ArrowRightIcon,
+  CalendarIcon,
   ExpandIcon,
   PlusIcon,
   ShrinkIcon,
@@ -321,6 +322,51 @@ const DesktopPoll: React.FunctionComponent = () => {
     return sections;
   }, [filteredParticipants]);
 
+  const groupedOptionsByDay = React.useMemo(() => {
+    const groups: Array<{
+      dayKey: string;
+      dayLabel: string;
+      dow: string;
+      month: string;
+      day: string;
+      year?: string;
+      options: Array<(typeof options)[number]>;
+    }> = [];
+
+    for (const option of options) {
+      const dayKey = `${option.year || ""}-${option.month}-${option.day}`;
+      let g = groups.find((grp) => grp.dayKey === dayKey);
+      if (!g) {
+        g = {
+          dayKey,
+          dayLabel: `${option.dow}, ${option.month} ${option.day}`,
+          dow: option.dow,
+          month: option.month,
+          day: option.day,
+          year: option.year,
+          options: [],
+        };
+        groups.push(g);
+      }
+      g.options.push(option);
+    }
+    return groups;
+  }, [options]);
+
+  const totalTableCols = React.useMemo(() => {
+    let cols = 1; // sticky left options column
+    if (mode !== "view") cols += 1; // voting column
+    for (const section of participantSections) {
+      if (participantSections.length > 1 || section.groupKey !== "ungrouped") {
+        cols += 1; // vertical divider column
+      }
+      cols += section.participants.filter(
+        (p) => !(mode === "edit" && votingForm.watch("participantId") === p.id),
+      ).length;
+    }
+    return cols;
+  }, [mode, participantSections, votingForm]);
+
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const [isOverflowing, setIsOverflowing] = React.useState(false);
@@ -610,119 +656,152 @@ const DesktopPoll: React.FunctionComponent = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {options.map((option) => {
-                            const voteIndex = poll.options.findIndex(
-                              (o) => o.id === option.optionId,
-                            );
-
-                            return (
-                              <tr key={option.optionId} className="group">
-                                <td
-                                  style={{
-                                    minWidth: 280,
-                                    maxWidth: 280,
-                                    width: 280,
-                                  }}
-                                  className="sticky left-0 z-10 border-border border-b bg-card px-3 py-2"
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="flex min-w-0 flex-col">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="font-semibold text-foreground text-xs">
-                                          {option.dow}, {option.month}{" "}
-                                          {option.day}
-                                        </span>
-                                        {option.year ? (
-                                          <span className="text-[10px] text-muted-foreground">
-                                            {option.year}
-                                          </span>
-                                        ) : null}
-                                      </div>
-                                      {option.title ? (
-                                        <span className="truncate font-medium text-primary text-xs">
-                                          {option.title}
+                          {groupedOptionsByDay.map((dayGroup) => (
+                            <React.Fragment key={`day-grp-${dayGroup.dayKey}`}>
+                              {groupedOptionsByDay.length > 1 ||
+                              dayGroup.options.length > 1 ? (
+                                <tr className="select-none border-border border-y bg-muted/60">
+                                  <td
+                                    colSpan={totalTableCols}
+                                    className="sticky left-0 z-20 bg-muted/80 px-3 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <CalendarIcon className="size-3.5 shrink-0 text-primary" />
+                                      <span>{dayGroup.dayLabel}</span>
+                                      {dayGroup.year ? (
+                                        <span className="font-normal text-[11px] text-muted-foreground">
+                                          {dayGroup.year}
                                         </span>
                                       ) : null}
-                                      <span className="text-[11px] text-muted-foreground">
-                                        {option.type === "timeSlot"
-                                          ? `${option.startTime} – ${option.endTime}`
-                                          : t("allDay", {
-                                              defaultValue: "All day",
-                                            })}
-                                      </span>
-                                    </div>
-                                    <div className="shrink-0">
-                                      <ConnectedScoreSummary
-                                        optionId={option.optionId}
-                                        filteredParticipants={
-                                          filteredParticipants
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                </td>
-
-                                {mode !== "view" ? (
-                                  <td className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center">
-                                    <div className="flex items-center justify-center p-1">
-                                      {voteIndex !== -1 ? (
-                                        <Controller
-                                          control={votingForm.control}
-                                          name={`votes.${voteIndex}.type`}
-                                          render={({ field }) => (
-                                            <VoteSelector
-                                              value={field.value}
-                                              onChange={(value) =>
-                                                field.onChange(value)
-                                              }
-                                              allowTentativeVotes={
-                                                poll.allowTentativeVotes
-                                              }
-                                              optionLabel={`${option.day} ${option.month}`}
-                                            />
-                                          )}
-                                        />
-                                      ) : null}
+                                      <Badge
+                                        variant="outline"
+                                        className="h-4 px-1 py-0 font-normal text-[10px] text-muted-foreground"
+                                      >
+                                        {dayGroup.options.length}{" "}
+                                        {dayGroup.options.length === 1
+                                          ? "slot"
+                                          : "slots"}
+                                      </Badge>
                                     </div>
                                   </td>
-                                ) : null}
+                                </tr>
+                              ) : null}
 
-                                {participantSections.map((section) => (
-                                  <React.Fragment key={section.groupKey}>
-                                    {participantSections.length > 1 ||
-                                    section.groupKey !== "ungrouped" ? (
-                                      <td
-                                        key={`sep-td-${section.groupKey}`}
-                                        className="w-9 min-w-9 max-w-9 border-border/70 border-r border-b border-l bg-muted/30"
-                                      />
+                              {dayGroup.options.map((option) => {
+                                const voteIndex = poll.options.findIndex(
+                                  (o) => o.id === option.optionId,
+                                );
+
+                                return (
+                                  <tr key={option.optionId} className="group">
+                                    <td
+                                      style={{
+                                        minWidth: 280,
+                                        maxWidth: 280,
+                                        width: 280,
+                                      }}
+                                      className="sticky left-0 z-10 border-border border-b bg-card px-3 py-2"
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex min-w-0 flex-col">
+                                          {option.title ? (
+                                            <span className="truncate font-semibold text-foreground text-xs">
+                                              {option.title}
+                                            </span>
+                                          ) : null}
+                                          <span
+                                            className={cn(
+                                              "text-xs",
+                                              option.title
+                                                ? "font-normal text-[11px] text-muted-foreground"
+                                                : "font-semibold text-foreground",
+                                            )}
+                                          >
+                                            {option.type === "timeSlot"
+                                              ? `${option.startTime} – ${option.endTime}`
+                                              : t("allDay", {
+                                                  defaultValue: "All day",
+                                                })}
+                                          </span>
+                                        </div>
+                                        <div className="shrink-0">
+                                          <ConnectedScoreSummary
+                                            optionId={option.optionId}
+                                            filteredParticipants={
+                                              filteredParticipants
+                                            }
+                                          />
+                                        </div>
+                                      </div>
+                                    </td>
+
+                                    {mode !== "view" ? (
+                                      <td className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center">
+                                        <div className="flex items-center justify-center p-1">
+                                          {voteIndex !== -1 ? (
+                                            <Controller
+                                              control={votingForm.control}
+                                              name={`votes.${voteIndex}.type`}
+                                              render={({ field }) => (
+                                                <VoteSelector
+                                                  value={field.value}
+                                                  onChange={(value) =>
+                                                    field.onChange(value)
+                                                  }
+                                                  allowTentativeVotes={
+                                                    poll.allowTentativeVotes
+                                                  }
+                                                  optionLabel={`${option.day} ${option.month}`}
+                                                />
+                                              )}
+                                            />
+                                          ) : null}
+                                        </div>
+                                      </td>
                                     ) : null}
-                                    {section.participants.map((participant) => {
-                                      const isEditingThis =
-                                        mode === "edit" &&
-                                        votingForm.watch("participantId") ===
-                                          participant.id;
-                                      if (isEditingThis) return null;
 
-                                      const vote = participant.votes.find(
-                                        (v) => v.optionId === option.optionId,
-                                      )?.type;
+                                    {participantSections.map((section) => (
+                                      <React.Fragment key={section.groupKey}>
+                                        {participantSections.length > 1 ||
+                                        section.groupKey !== "ungrouped" ? (
+                                          <td
+                                            key={`sep-td-${section.groupKey}`}
+                                            className="w-9 min-w-9 max-w-9 border-border/70 border-r border-b border-l bg-muted/30"
+                                          />
+                                        ) : null}
+                                        {section.participants.map(
+                                          (participant) => {
+                                            const isEditingThis =
+                                              mode === "edit" &&
+                                              votingForm.watch(
+                                                "participantId",
+                                              ) === participant.id;
+                                            if (isEditingThis) return null;
 
-                                      return (
-                                        <td
-                                          key={participant.id}
-                                          className="h-12 border-border border-b border-l bg-card text-center"
-                                        >
-                                          <div className="flex items-center justify-center">
-                                            <VoteIcon type={vote} />
-                                          </div>
-                                        </td>
-                                      );
-                                    })}
-                                  </React.Fragment>
-                                ))}
-                              </tr>
-                            );
-                          })}
+                                            const vote = participant.votes.find(
+                                              (v) =>
+                                                v.optionId === option.optionId,
+                                            )?.type;
+
+                                            return (
+                                              <td
+                                                key={participant.id}
+                                                className="h-12 border-border border-b border-l bg-card text-center"
+                                              >
+                                                <div className="flex items-center justify-center">
+                                                  <VoteIcon type={vote} />
+                                                </div>
+                                              </td>
+                                            );
+                                          },
+                                        )}
+                                      </React.Fragment>
+                                    ))}
+                                  </tr>
+                                );
+                              })}
+                            </React.Fragment>
+                          ))}
                         </tbody>
                       </table>
                     ) : (
