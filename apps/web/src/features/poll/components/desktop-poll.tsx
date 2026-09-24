@@ -365,7 +365,7 @@ const DesktopPoll: React.FunctionComponent = () => {
   }, [options]);
 
   const totalTableCols = React.useMemo(() => {
-    return 1 + (mode === "new" ? 1 : 0) + filteredParticipants.length;
+    return 2 + (mode === "new" ? 1 : 0) + filteredParticipants.length;
   }, [mode, filteredParticipants]);
 
   const editingParticipantId = votingForm.watch("participantId");
@@ -378,7 +378,7 @@ const DesktopPoll: React.FunctionComponent = () => {
       const colLeft = col.offsetLeft;
       const colWidth = col.offsetWidth;
       const containerWidth = container.offsetWidth;
-      const stickyWidth = isAxesSwapped ? 165 : 340;
+      const stickyWidth = isAxesSwapped ? 120 : 340;
 
       const targetScroll =
         colLeft -
@@ -405,7 +405,7 @@ const DesktopPoll: React.FunctionComponent = () => {
     collapse();
   });
 
-  const scrollIncrement = isAxesSwapped ? 160 : 340;
+  const scrollIncrement = isAxesSwapped ? 120 : 340;
 
   const goToNextPage = React.useCallback(() => {
     setDidScroll(true);
@@ -597,8 +597,8 @@ const DesktopPoll: React.FunctionComponent = () => {
                   <div
                     aria-hidden="true"
                     className={cn(
-                      "pointer-events-none absolute top-0 bottom-3 z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
-                      isAxesSwapped ? "left-[165px]" : "left-[340px]",
+                      "pointer-events-none absolute top-0 bottom-0 z-40 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
+                      isAxesSwapped ? "left-[120px]" : "left-[340px]",
                       x > 0 ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -626,11 +626,11 @@ const DesktopPoll: React.FunctionComponent = () => {
                             <th
                               rowSpan={2}
                               style={{
-                                minWidth: 165,
-                                maxWidth: 165,
-                                width: 165,
+                                minWidth: 120,
+                                maxWidth: 120,
+                                width: 120,
                               }}
-                              className="sticky top-0 left-0 z-40 border-border border-r border-b bg-card px-2.5 py-1.5 text-left align-bottom"
+                              className="sticky top-0 left-0 z-40 border-border border-r border-b bg-card px-2 py-1.5 text-left align-bottom"
                             >
                               <div className="flex flex-col gap-0.5 pb-1">
                                 <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
@@ -641,6 +641,16 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   {filteredParticipants.length === 1
                                     ? "participant"
                                     : "participants"}
+                                </span>
+                              </div>
+                            </th>
+                            <th
+                              rowSpan={2}
+                              className="sticky top-0 z-30 h-44 w-12 min-w-12 max-w-12 select-none border-border border-b border-r bg-muted/60 p-0 text-center align-bottom"
+                            >
+                              <div className="flex h-full flex-col items-center justify-end pb-3">
+                                <span className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wider">
+                                  Total
                                 </span>
                               </div>
                             </th>
@@ -830,25 +840,17 @@ const DesktopPoll: React.FunctionComponent = () => {
                                 <tr className="select-none border-border border-y bg-muted/60">
                                   <td
                                     style={{
-                                      minWidth: 165,
-                                      maxWidth: 165,
-                                      width: 165,
+                                      minWidth: 120,
+                                      maxWidth: 120,
+                                      width: 120,
                                     }}
-                                    className="sticky left-0 z-10 border-border border-r bg-muted px-2.5 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
+                                    className="sticky left-0 z-10 border-border border-r bg-muted px-2 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
                                   >
-                                    <div className="flex items-center justify-between gap-1.5">
-                                      <div className="flex min-w-0 items-center gap-1.5">
-                                        <CalendarIcon className="size-3.5 shrink-0 text-primary" />
-                                        <span className="truncate font-semibold text-foreground/90 text-xs">
-                                          {dayGroup.dayLabel}
-                                        </span>
-                                      </div>
-                                      <Badge
-                                        variant="outline"
-                                        className="h-4 shrink-0 px-1 py-0 font-normal text-[9px] text-muted-foreground"
-                                      >
-                                        {dayGroup.options.length}
-                                      </Badge>
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                      <CalendarIcon className="size-3.5 shrink-0 text-primary" />
+                                      <span className="truncate font-semibold text-foreground/90 text-xs">
+                                        {dayGroup.dayLabel}
+                                      </span>
                                     </div>
                                   </td>
                                   <td
@@ -867,42 +869,43 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   <tr key={option.optionId} className="group">
                                     <td
                                       style={{
-                                        minWidth: 165,
-                                        maxWidth: 165,
-                                        width: 165,
+                                        minWidth: 120,
+                                        maxWidth: 120,
+                                        width: 120,
                                       }}
-                                      className="sticky left-0 z-10 border-border border-r border-b bg-card px-2.5 py-1.5"
+                                      className="sticky left-0 z-10 border-border border-r border-b bg-card px-2 py-1.5"
                                     >
-                                      <div className="flex items-center justify-between gap-1.5">
-                                        <div className="flex min-w-0 flex-col">
-                                          {option.title ? (
-                                            <span className="truncate font-semibold text-foreground text-xs">
-                                              {option.title}
-                                            </span>
-                                          ) : null}
-                                          <span
-                                            className={cn(
-                                              "text-xs",
-                                              option.title
-                                                ? "font-normal text-[11px] text-muted-foreground"
-                                                : "font-semibold text-foreground",
-                                            )}
-                                          >
-                                            {option.type === "timeSlot"
-                                              ? `${option.startTime} – ${option.endTime}`
-                                              : t("allDay", {
-                                                  defaultValue: "All day",
-                                                })}
+                                      <div className="flex min-w-0 flex-col">
+                                        {option.title ? (
+                                          <span className="truncate font-semibold text-foreground text-xs">
+                                            {option.title}
                                           </span>
-                                        </div>
-                                        <div className="shrink-0">
-                                          <ConnectedScoreSummary
-                                            optionId={option.optionId}
-                                            filteredParticipants={
-                                              filteredParticipants
-                                            }
-                                          />
-                                        </div>
+                                        ) : null}
+                                        <span
+                                          className={cn(
+                                            "text-xs leading-tight",
+                                            option.title
+                                              ? "font-normal text-[11px] text-muted-foreground"
+                                              : "font-semibold text-foreground",
+                                          )}
+                                        >
+                                          {option.type === "timeSlot"
+                                            ? `${option.startTime} – ${option.endTime}`
+                                            : t("allDay", {
+                                                defaultValue: "All day",
+                                              })}
+                                        </span>
+                                      </div>
+                                    </td>
+
+                                    <td className="h-12 w-12 min-w-12 max-w-12 border-border border-b border-r bg-muted/20 text-center">
+                                      <div className="flex items-center justify-center p-0.5">
+                                        <ConnectedScoreSummary
+                                          optionId={option.optionId}
+                                          filteredParticipants={
+                                            filteredParticipants
+                                          }
+                                        />
                                       </div>
                                     </td>
 
