@@ -647,9 +647,10 @@ const DesktopPoll: React.FunctionComponent = () => {
                             {mode === "new" ? (
                               <th
                                 rowSpan={2}
-                                className="sticky top-0 z-35 h-48 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom"
+                                className="sticky top-0 z-30 h-48 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-primary/50 border-b border-l bg-card p-0 align-bottom"
                               >
                                 <div className="relative h-full w-full overflow-visible">
+                                  <div className="pointer-events-none absolute inset-0 bg-primary/5" />
                                   <div
                                     className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                     style={{
@@ -717,12 +718,12 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       isEditingThis ? editingColRef : undefined
                                     }
                                     className={cn(
-                                      "sticky top-7 z-25 h-44 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
+                                      "group/th sticky top-7 z-30 h-44 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
                                       isEditingThis &&
-                                        "border-primary bg-primary/10",
+                                        "border-primary border-b-primary border-l-primary",
                                       canEdit &&
                                         mode === "view" &&
-                                        "cursor-pointer hover:bg-muted/40",
+                                        "cursor-pointer",
                                     )}
                                     onClick={() => {
                                       if (canEdit && mode === "view") {
@@ -733,6 +734,14 @@ const DesktopPoll: React.FunctionComponent = () => {
                                     }}
                                   >
                                     <div className="relative h-full w-full overflow-visible">
+                                      {/* Tint overlays over solid bg-card to guarantee 100% opacity against scrolled rows */}
+                                      {isEditingThis ? (
+                                        <div className="pointer-events-none absolute inset-0 bg-primary/10" />
+                                      ) : null}
+                                      {canEdit && mode === "view" ? (
+                                        <div className="pointer-events-none absolute inset-0 transition-colors group-hover/th:bg-muted/40" />
+                                      ) : null}
+
                                       <div
                                         className="absolute bottom-5 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                         style={{
@@ -825,7 +834,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       maxWidth: 165,
                                       width: 165,
                                     }}
-                                    className="sticky left-0 z-20 border-border border-r bg-muted/90 px-2.5 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
+                                    className="sticky left-0 z-10 border-border border-r bg-muted px-2.5 py-1.5 font-semibold text-foreground/90 text-xs tracking-tight"
                                   >
                                     <div className="flex items-center justify-between gap-1.5">
                                       <div className="flex min-w-0 items-center gap-1.5">
