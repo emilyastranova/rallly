@@ -354,13 +354,33 @@ const DesktopPoll: React.FunctionComponent = () => {
   }, [options]);
 
   const totalTableCols = React.useMemo(() => {
-    let cols = 1; // sticky left options column
-    if (mode !== "view") cols += 1; // voting column
-    cols += filteredParticipants.filter(
-      (p) => !(mode === "edit" && votingForm.watch("participantId") === p.id),
-    ).length;
-    return cols;
-  }, [mode, filteredParticipants, votingForm]);
+    return 1 + (mode === "new" ? 1 : 0) + filteredParticipants.length;
+  }, [mode, filteredParticipants]);
+
+  const editingParticipantId = votingForm.watch("participantId");
+  const editingColRef = React.useRef<HTMLTableCellElement>(null);
+
+  React.useEffect(() => {
+    if (mode === "edit" && editingColRef.current && scrollRef.current) {
+      const container = scrollRef.current;
+      const col = editingColRef.current;
+      const colLeft = col.offsetLeft;
+      const colWidth = col.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      const stickyWidth = isAxesSwapped ? 260 : 340;
+
+      const targetScroll =
+        colLeft -
+        stickyWidth -
+        (containerWidth - stickyWidth) / 2 +
+        colWidth / 2;
+
+      container.scrollTo({
+        left: Math.max(0, targetScroll),
+        behavior: "smooth",
+      });
+    }
+  }, [mode, isAxesSwapped]);
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -514,7 +534,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                     aria-hidden="true"
                     className={cn(
                       "pointer-events-none absolute top-0 bottom-3 z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
-                      isAxesSwapped ? "left-[280px]" : "left-[340px]",
+                      isAxesSwapped ? "left-[260px]" : "left-[340px]",
                       x > 0 ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -542,11 +562,11 @@ const DesktopPoll: React.FunctionComponent = () => {
                             <th
                               rowSpan={2}
                               style={{
-                                minWidth: 280,
-                                maxWidth: 280,
-                                width: 280,
+                                minWidth: 260,
+                                maxWidth: 260,
+                                width: 260,
                               }}
-                              className="sticky top-0 left-0 z-30 border-border border-b bg-card px-3 py-2 text-left align-bottom"
+                              className="sticky top-0 left-0 z-40 border-border border-b bg-card px-3 py-2 text-left align-bottom"
                             >
                               <div className="flex flex-col gap-1 pb-1">
                                 <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
@@ -560,23 +580,23 @@ const DesktopPoll: React.FunctionComponent = () => {
                                 </span>
                               </div>
                             </th>
-                            {mode !== "view" ? (
+                            {mode === "new" ? (
                               <th
                                 rowSpan={2}
-                                className="sticky top-0 z-20 h-48 min-w-[52px] max-w-[60px] overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom"
+                                className="sticky top-0 z-35 h-48 w-16 min-w-16 max-w-16 overflow-visible border-primary/50 border-b border-l bg-primary/5 p-0 align-bottom"
                               >
                                 <div className="relative h-full w-full overflow-visible">
-                                  <div className="absolute bottom-3 left-4 flex w-44 origin-bottom-left rotate-[-60deg] items-center gap-1.5 whitespace-nowrap text-left">
+                                  <div
+                                    className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
+                                    style={{
+                                      left: "20px",
+                                      transformOrigin: "12px 12px",
+                                      transform: "rotate(-60deg)",
+                                    }}
+                                  >
                                     <YouAvatar />
                                     <span className="max-w-[120px] truncate font-semibold text-primary text-xs">
-                                      {mode === "new"
-                                        ? t("you", { defaultValue: "You" })
-                                        : (participants.find(
-                                            (p) =>
-                                              p.id ===
-                                              votingForm.watch("participantId"),
-                                          )?.name ??
-                                          t("you", { defaultValue: "You" }))}
+                                      {t("you", { defaultValue: "You" })}
                                     </span>
                                     <Badge
                                       variant="default"
@@ -589,20 +609,14 @@ const DesktopPoll: React.FunctionComponent = () => {
                               </th>
                             ) : null}
                             {participantSections.map((section) => {
-                              const visibleCount = section.participants.filter(
-                                (p) =>
-                                  !(
-                                    mode === "edit" &&
-                                    votingForm.watch("participantId") === p.id
-                                  ),
-                              ).length;
-                              if (visibleCount === 0) return null;
+                              const count = section.participants.length;
+                              if (count === 0) return null;
 
                               return (
                                 <th
                                   key={`grp-bar-${section.groupKey}`}
-                                  colSpan={visibleCount}
-                                  className="sticky top-0 z-25 h-7 select-none border-border border-b border-l bg-muted/80 px-2 py-1 text-center"
+                                  colSpan={count}
+                                  className="sticky top-0 z-30 h-7 select-none border-border border-b border-l bg-muted px-2 py-1 text-center"
                                 >
                                   <div className="flex items-center justify-center gap-1.5 font-semibold text-foreground/90 text-xs">
                                     <Users2Icon className="size-3 shrink-0 text-primary" />
@@ -613,7 +627,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       variant="outline"
                                       className="h-3.5 px-1 py-0 font-normal text-[9px] text-muted-foreground"
                                     >
-                                      {section.participants.length}
+                                      {count}
                                     </Badge>
                                   </div>
                                 </th>
@@ -626,20 +640,29 @@ const DesktopPoll: React.FunctionComponent = () => {
                               section.participants.map((participant) => {
                                 const isEditingThis =
                                   mode === "edit" &&
-                                  votingForm.watch("participantId") ===
-                                    participant.id;
-                                if (isEditingThis) return null;
-
+                                  editingParticipantId === participant.id;
                                 const isYou = user.ownsObject(participant);
 
                                 return (
                                   <th
                                     key={participant.id}
-                                    className="sticky top-7 z-20 h-40 min-w-[52px] max-w-[60px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom"
+                                    ref={
+                                      isEditingThis ? editingColRef : undefined
+                                    }
+                                    className={cn(
+                                      "sticky top-7 z-25 h-44 w-16 min-w-16 max-w-16 overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
+                                      isEditingThis &&
+                                        "border-primary bg-primary/10",
+                                    )}
                                   >
                                     <div className="relative h-full w-full overflow-visible">
                                       <div
-                                        className="absolute bottom-3 left-4 flex w-44 origin-bottom-left rotate-[-60deg] items-center gap-1.5 whitespace-nowrap text-left"
+                                        className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
+                                        style={{
+                                          left: "20px",
+                                          transformOrigin: "12px 12px",
+                                          transform: "rotate(-60deg)",
+                                        }}
                                         title={participant.name}
                                       >
                                         <OptimizedAvatarImage
@@ -647,7 +670,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                           src={participant.image ?? undefined}
                                           size="sm"
                                         />
-                                        <span className="max-w-[130px] truncate font-medium text-foreground text-xs">
+                                        <span className="max-w-[120px] truncate font-medium text-foreground text-xs">
                                           {participant.name}
                                         </span>
                                         {isYou ? (
@@ -659,6 +682,14 @@ const DesktopPoll: React.FunctionComponent = () => {
                                               i18nKey="you"
                                               defaults="You"
                                             />
+                                          </Badge>
+                                        ) : null}
+                                        {isEditingThis ? (
+                                          <Badge
+                                            variant="default"
+                                            className="shrink-0 px-1 py-0 text-[9px]"
+                                          >
+                                            Editing
                                           </Badge>
                                         ) : null}
                                       </div>
@@ -710,9 +741,9 @@ const DesktopPoll: React.FunctionComponent = () => {
                                   <tr key={option.optionId} className="group">
                                     <td
                                       style={{
-                                        minWidth: 280,
-                                        maxWidth: 280,
-                                        width: 280,
+                                        minWidth: 260,
+                                        maxWidth: 260,
+                                        width: 260,
                                       }}
                                       className="sticky left-0 z-10 border-border border-b bg-card px-3 py-2"
                                     >
@@ -749,7 +780,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       </div>
                                     </td>
 
-                                    {mode !== "view" ? (
+                                    {mode === "new" ? (
                                       <td className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center">
                                         <div className="flex items-center justify-center p-1">
                                           {voteIndex !== -1 ? (
@@ -777,15 +808,39 @@ const DesktopPoll: React.FunctionComponent = () => {
                                     {filteredParticipants.map((participant) => {
                                       const isEditingThis =
                                         mode === "edit" &&
-                                        votingForm.watch("participantId") ===
-                                          participant.id;
-                                      if (isEditingThis) return null;
+                                        editingParticipantId === participant.id;
 
                                       const vote = participant.votes.find(
                                         (v) => v.optionId === option.optionId,
                                       )?.type;
 
-                                      return (
+                                      return isEditingThis ? (
+                                        <td
+                                          key={participant.id}
+                                          className="h-12 border-primary/30 border-b border-l bg-primary/5 text-center"
+                                        >
+                                          <div className="flex items-center justify-center p-1">
+                                            {voteIndex !== -1 ? (
+                                              <Controller
+                                                control={votingForm.control}
+                                                name={`votes.${voteIndex}.type`}
+                                                render={({ field }) => (
+                                                  <VoteSelector
+                                                    value={field.value}
+                                                    onChange={(value) =>
+                                                      field.onChange(value)
+                                                    }
+                                                    allowTentativeVotes={
+                                                      poll.allowTentativeVotes
+                                                    }
+                                                    optionLabel={`${option.day} ${option.month}`}
+                                                  />
+                                                )}
+                                              />
+                                            ) : null}
+                                          </div>
+                                        </td>
+                                      ) : (
                                         <td
                                           key={participant.id}
                                           className="h-12 border-border border-b border-l bg-card text-center"
