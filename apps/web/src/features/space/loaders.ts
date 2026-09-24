@@ -5,6 +5,7 @@ import { cache } from "react";
 
 import { getUpcomingEventCount } from "@/features/scheduled-event/data";
 import {
+  ensureUserInDefaultSpace,
   getActiveSpaceForUser,
   getOwnedSpace,
   getSpaceSeatCount,
@@ -20,6 +21,12 @@ import { InvalidSessionError } from "@/lib/errors/invalid-session-error";
 import { getPathname } from "@/lib/pathname";
 import { buildSafeRedirectUrl } from "@/lib/utils/redirect";
 
+export {
+  ensureUserInDefaultSpace,
+  getActiveSpaceForUser,
+  getOwnedSpace,
+} from "@/features/space/data";
+
 /**
  * The active space for the signed-in user, gated for server rendering:
  * redirects to /login when unauthenticated or a guest, redirects to /setup
@@ -33,7 +40,6 @@ export const loadActiveSpace = cache(async () => {
   const state = await getSessionState();
 
   // An unreadable session (store unreachable, transient failure) is not
-  // "logged out" — redirecting to /login on it is one leg of a redirect
   // loop. Fail the render instead so the user gets the error boundary's
   // retry page.
   if (state.status === "error") {
@@ -70,6 +76,8 @@ export const loadActiveSpace = cache(async () => {
       }),
     );
   }
+
+  await ensureUserInDefaultSpace(user.id);
 
   const space = await getActiveSpaceForUser(user.id);
 

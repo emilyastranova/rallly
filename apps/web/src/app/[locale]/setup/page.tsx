@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 import { SetupForm } from "@/app/[locale]/setup/components/setup-form";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Logo } from "@/features/branding/components/logo";
-import { getOwnedSpace } from "@/features/space/data";
+import {
+  ensureUserInDefaultSpace,
+  getActiveSpaceForUser,
+  getOwnedSpace,
+} from "@/features/space/loaders";
+import { isSpaceChoiceDisabled } from "@/features/space/utils";
 import { SignedInFooter } from "@/features/user/components/signed-in-footer";
 import { loadUser } from "@/features/user/loaders";
 import { Trans } from "@/i18n/client";
@@ -17,15 +22,11 @@ export default async function SetupPage(props: {
   const user = await loadUser();
   const searchParams = await props.searchParams;
 
-  // Whether onboarding is done is "does a space exist", not "is one
-  // active": getActiveSpaceForUser hides memberships in hobby spaces the
-  // user doesn't own, so gating on it sent established accounts back here
-  // and had them create a second space.
-  const space = await getOwnedSpace(user.id);
+  await ensureUserInDefaultSpace(user.id);
 
-  // Mirrors the gate in features/space/loaders.ts: name and a space are
-  // required, timezone and time format are not. The two conditions have to
-  // agree or the user ping-pongs between here and the app.
+  const space =
+    (await getActiveSpaceForUser(user.id)) ?? (await getOwnedSpace(user.id));
+
   if (user.name && space) {
     redirect(validateRedirectUrl(searchParams?.redirectTo) ?? "/");
   }
@@ -33,6 +34,7 @@ export default async function SetupPage(props: {
   // Prefill from the device: the timeZone cookie tracks the browser's zone
   // on every visit, and the format cookie holds a per-device choice.
   const device = await getDeviceDateTimeConfig();
+  const disableSpaceChoice = isSpaceChoiceDisabled();
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
@@ -66,6 +68,7 @@ export default async function SetupPage(props: {
               defaultTimeZone={user.timeZone ?? device.timeZone}
               defaultTimeFormat={user.timeFormat ?? device.timeFormat}
               email={user.email}
+              disableSpaceChoice={disableSpaceChoice}
             />
           </div>
         </article>

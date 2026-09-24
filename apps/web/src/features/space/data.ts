@@ -194,3 +194,78 @@ export const getActiveSpaceForUser = cache(async (userId: string) => {
     policy: await getInstancePolicy(),
   });
 });
+
+export const getDefaultSpace = cache(async () => {
+  try {
+    if (process.env.DEFAULT_SPACE_ID) {
+      const space = await prisma.space.findUnique({
+        where: { id: process.env.DEFAULT_SPACE_ID },
+      });
+      if (space) return space;
+    }
+
+    if (process.env.DEFAULT_SPACE_NAME) {
+      const space = await prisma.space.findFirst({
+        where: {
+          name: {
+            equals: process.env.DEFAULT_SPACE_NAME.trim(),
+            mode: "insensitive",
+          },
+        },
+      });
+      if (space) return space;
+    }
+
+    if (process.env.INITIAL_ADMIN_EMAIL) {
+      const space = await prisma.space.findFirst({
+        where: {
+          owner: {
+            email: {
+              equals: process.env.INITIAL_ADMIN_EMAIL.trim(),
+              mode: "insensitive",
+            },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+      });
+      if (space) return space;
+    }
+
+    return await prisma.space.findFirst({
+      orderBy: { createdAt: "asc" },
+    });
+  } catch {
+    return null;
+  }
+});
+
+export async function ensureUserInDefaultSpace(userId: string) {
+  try {
+    const defaultSpace = await getDefaultSpace();
+    if (!defaultSpace) return null;
+
+    const existingMembership = await prisma.spaceMember.findUnique({
+      where: {
+        spaceId_userId: {
+          spaceId: defaultSpace.id,
+          userId,
+        },
+      },
+    });
+
+    if (!existingMembership) {
+      await prisma.spaceMember.create({
+        data: {
+          spaceId: defaultSpace.id,
+          userId,
+          role: "MEMBER",
+          lastSelectedAt: new Date(),
+        },
+      });
+    }
+
+    return defaultSpace;
+  } catch {
+    return null;
+  }
+}

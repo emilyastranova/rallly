@@ -525,6 +525,17 @@ export const authLib = betterAuth({
           const cta = parseCtaParam(ctx?.getCookie(CTA_COOKIE_NAME));
           // No space is created here — /setup owns space creation, and the
           // active-space gate keeps redirecting there until it happens.
+          after(async () => {
+            try {
+              const { ensureUserInDefaultSpace } = await import(
+                "@/features/space/data"
+              );
+              await ensureUserInDefaultSpace(user.id);
+            } catch {
+              // Ignore
+            }
+          });
+
           track(
             { id: user.id, isGuest: false },
             {

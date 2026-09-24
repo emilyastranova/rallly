@@ -187,3 +187,12 @@ export function inferIndustry({
 
   return undefined;
 }
+
+export function isSpaceChoiceDisabled() {
+  return (
+    process.env.DISABLE_ONBOARDING_SPACE_CHOICE === "true" ||
+    Boolean(process.env.DEFAULT_SPACE_NAME) ||
+    Boolean(process.env.DEFAULT_SPACE_ID) ||
+    true
+  );
+}

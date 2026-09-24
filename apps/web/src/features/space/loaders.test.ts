@@ -30,6 +30,7 @@ vi.mock("@/features/space/data", () => ({
   getOwnedSpace: (userId: string) => mockGetOwnedSpace(userId),
   getSpaceSeatCount: vi.fn(),
   getTotalSeatsForSpace: vi.fn(),
+  ensureUserInDefaultSpace: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("@/lib/pathname", () => ({

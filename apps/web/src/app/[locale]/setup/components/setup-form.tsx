@@ -92,6 +92,7 @@ export function SetupForm({
   defaultTimeZone,
   defaultTimeFormat,
   email,
+  disableSpaceChoice = false,
 }: {
   defaultName: string;
   defaultTimeZone?: string;
@@ -102,6 +103,7 @@ export function SetupForm({
    * the organization name as it is typed, which the server can't see yet.
    */
   email: string;
+  disableSpaceChoice?: boolean;
 }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
@@ -260,123 +262,127 @@ export function SetupForm({
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="spaceType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                <Trans
-                  i18nKey="spaceTypeLabel"
-                  defaults="What will you be using it for?"
-                />
-              </FormLabel>
-              <FormControl>
-                <RadioGroup
-                  value={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    form.clearErrors("organizationName");
-                  }}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  <SpaceTypeOption
-                    value="personal"
-                    icon={<UserIcon className="size-4" />}
-                    label={t("spaceTypePersonal", {
-                      defaultValue: "Personal",
-                    })}
-                  />
-                  <SpaceTypeOption
-                    value="work"
-                    icon={<BriefcaseIcon className="size-4" />}
-                    label={t("spaceTypeWork", { defaultValue: "Work" })}
-                  />
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {spaceType === "work" ? (
+        {!disableSpaceChoice ? (
           <>
             <FormField
               control={form.control}
-              name="organizationName"
+              name="spaceType"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     <Trans
-                      i18nKey="organizationName"
-                      defaults="Organization name"
+                      i18nKey="spaceTypeLabel"
+                      defaults="What will you be using it for?"
                     />
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...passwordManagerIgnoreProps}
-                      autoFocus={true}
-                      placeholder={t("organizationNamePlaceholder", {
-                        defaultValue: "e.g. Acme Corp",
-                      })}
-                      disabled={form.formState.isSubmitting}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Industry first: confirming a sector primes a more precise
-                answer to the role question below. */}
-            <FormField
-              control={form.control}
-              name="industry"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="industry">
-                    <Trans i18nKey="industry" defaults="Industry" />
-                    <span className="ml-1 font-normal text-muted-foreground">
-                      <Trans i18nKey="optional" defaults="(optional)" />
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <IndustrySelect
-                      id="industry"
+                    <RadioGroup
                       value={field.value}
                       onValueChange={(value) => {
-                        industryTouched.current = true;
                         field.onChange(value);
+                        form.clearErrors("organizationName");
                       }}
-                      disabled={form.formState.isSubmitting}
-                    />
+                      className="grid grid-cols-2 gap-2"
+                    >
+                      <SpaceTypeOption
+                        value="personal"
+                        icon={<UserIcon className="size-4" />}
+                        label={t("spaceTypePersonal", {
+                          defaultValue: "Personal",
+                        })}
+                      />
+                      <SpaceTypeOption
+                        value="work"
+                        icon={<BriefcaseIcon className="size-4" />}
+                        label={t("spaceTypeWork", { defaultValue: "Work" })}
+                      />
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="jobTitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="jobTitle">
-                    <Trans i18nKey="jobTitle" defaults="Your role" />
-                    <span className="ml-1 font-normal text-muted-foreground">
-                      <Trans i18nKey="optional" defaults="(optional)" />
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <JobTitleSelect
-                      id="jobTitle"
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={form.formState.isSubmitting}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {spaceType === "work" ? (
+              <>
+                <FormField
+                  control={form.control}
+                  name="organizationName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        <Trans
+                          i18nKey="organizationName"
+                          defaults="Organization name"
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          {...passwordManagerIgnoreProps}
+                          autoFocus={true}
+                          placeholder={t("organizationNamePlaceholder", {
+                            defaultValue: "e.g. Acme Corp",
+                          })}
+                          disabled={form.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Industry first: confirming a sector primes a more precise
+                    answer to the role question below. */}
+                <FormField
+                  control={form.control}
+                  name="industry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="industry">
+                        <Trans i18nKey="industry" defaults="Industry" />
+                        <span className="ml-1 font-normal text-muted-foreground">
+                          <Trans i18nKey="optional" defaults="(optional)" />
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <IndustrySelect
+                          id="industry"
+                          value={field.value}
+                          onValueChange={(value) => {
+                            industryTouched.current = true;
+                            field.onChange(value);
+                          }}
+                          disabled={form.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="jobTitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="jobTitle">
+                        <Trans i18nKey="jobTitle" defaults="Your role" />
+                        <span className="ml-1 font-normal text-muted-foreground">
+                          <Trans i18nKey="optional" defaults="(optional)" />
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <JobTitleSelect
+                          id="jobTitle"
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={form.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            ) : null}
           </>
         ) : null}
         {form.formState.errors.root?.message ? (
