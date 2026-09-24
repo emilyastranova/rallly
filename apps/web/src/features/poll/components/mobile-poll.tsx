@@ -5,7 +5,10 @@ import { Card } from "@rallly/ui/card";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@rallly/ui/select";
@@ -59,6 +62,86 @@ const MobilePoll: React.FunctionComponent = () => {
 
   const { canEditParticipant, canAddNewParticipant } = usePermissions();
 
+  const [selectedGroupId, setSelectedGroupId] = React.useState<string>("all");
+
+  const availableGroups = React.useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+    for (const p of visibleParticipants) {
+      if (p.group) {
+        map.set(p.group.name.trim().toLowerCase(), {
+          id: p.group.id,
+          name: p.group.name,
+        });
+      }
+      if (p.userGroups) {
+        for (const ug of p.userGroups) {
+          map.set(ug.name.trim().toLowerCase(), {
+            id: ug.id,
+            name: ug.name,
+          });
+        }
+      }
+    }
+    return Array.from(map.values());
+  }, [visibleParticipants]);
+
+  const filteredParticipants = React.useMemo(() => {
+    if (selectedGroupId === "all") {
+      return visibleParticipants;
+    }
+    if (selectedGroupId === "none") {
+      return visibleParticipants.filter(
+        (p) => !p.group && (!p.userGroups || p.userGroups.length === 0),
+      );
+    }
+    return visibleParticipants.filter((p) => {
+      if (p.group?.id === selectedGroupId) return true;
+      if (p.userGroups?.some((ug) => ug.id === selectedGroupId)) return true;
+      return false;
+    });
+  }, [visibleParticipants, selectedGroupId]);
+
+  const participantSections = React.useMemo(() => {
+    const sections: Array<{
+      groupKey: string;
+      groupName: string;
+      participants: typeof visibleParticipants;
+    }> = [];
+
+    const groupMap = new Map<string, typeof visibleParticipants>();
+    const ungrouped: typeof visibleParticipants = [];
+
+    for (const p of filteredParticipants) {
+      const gName = p.group?.name;
+      if (gName) {
+        if (!groupMap.has(gName)) {
+          groupMap.set(gName, []);
+        }
+        groupMap.get(gName)?.push(p);
+      } else {
+        ungrouped.push(p);
+      }
+    }
+
+    for (const [name, pList] of groupMap.entries()) {
+      sections.push({
+        groupKey: name,
+        groupName: name,
+        participants: pList,
+      });
+    }
+
+    if (ungrouped.length > 0) {
+      sections.push({
+        groupKey: "ungrouped",
+        groupName: sections.length > 0 ? "General / Other" : "Participants",
+        participants: ungrouped,
+      });
+    }
+
+    return sections;
+  }, [filteredParticipants]);
+
   const isEditing = votingForm.watch("mode") !== "view";
 
   // True while the sticky footer is pinned to the viewport (floating over
@@ -82,57 +165,60 @@ const MobilePoll: React.FunctionComponent = () => {
 
   const { t } = useTranslation();
 
-  const participantOptions = [
-    {
-      value: "all",
-      label: (
-        <div className="flex items-center gap-x-2.5">
-          <div>
-            <UsersIcon className="size-4 shrink-0 text-muted-foreground" />
-          </div>
-          <span>
-            {t("allParticipants", {
-              defaultValue: "All participants",
-            })}
-          </span>
-        </div>
-      ),
-    },
-    ...visibleParticipants.map((participant) => ({
-      value: participant.id,
-      label: (
-        <Participant>
-          <OptimizedAvatarImage
-            name={participant.name}
-            src={participant.image ?? undefined}
-            size="sm"
-          />
-          <ParticipantName>{participant.name}</ParticipantName>
-          {participant.group?.name ? (
-            <Badge
-              variant="outline"
-              className="px-1 py-0 font-normal text-[10px]"
-            >
-              {participant.group.name}
-            </Badge>
-          ) : null}
-          {session.ownsObject(participant) && (
-            <Badge>
-              <Trans i18nKey="you" defaults="You" />
-            </Badge>
-          )}
-        </Participant>
-      ),
-    })),
-  ];
-
   return (
     <Card className="overflow-visible">
       <div className="flex flex-col space-y-2 border-b p-2">
+        {availableGroups.length > 0 && !isEditing ? (
+          <div className="flex items-center gap-1.5 pb-1">
+            <Select
+              value={selectedGroupId}
+              onValueChange={(val) => {
+                const nextGroup = val ?? "all";
+                setSelectedGroupId(nextGroup);
+                if (selectedParticipantId && selectedParticipantId !== "all") {
+                  const p = visibleParticipants.find(
+                    (p) => p.id === selectedParticipantId,
+                  );
+                  if (
+                    p &&
+                    nextGroup !== "all" &&
+                    p.group?.id !== nextGroup &&
+                    !p.userGroups?.some((ug) => ug.id === nextGroup)
+                  ) {
+                    votingForm.setValue("participantId", "all");
+                  }
+                }
+              }}
+            >
+              <SelectTrigger className="h-8 w-full gap-1.5 border-border bg-muted/30 px-2.5 font-medium text-xs">
+                <UsersIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                <SelectValue placeholder="All Groups">
+                  {(selected: string | null | undefined) => {
+                    if (!selected || selected === "all")
+                      return "All Groups / Teams";
+                    if (selected === "none") return "Ungrouped";
+                    return (
+                      availableGroups.find((g) => g.id === selected)?.name ??
+                      selected
+                    );
+                  }}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Groups / Teams</SelectItem>
+                {availableGroups.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.name}
+                  </SelectItem>
+                ))}
+                <SelectItem value="none">Ungrouped</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
         <div className="flex gap-x-2">
           {selectedParticipantId || !isEditing ? (
             <Select
-              items={participantOptions}
               value={selectedParticipantId ?? "all"}
               onValueChange={(participantId) => {
                 if (participantId) {
@@ -145,13 +231,97 @@ const MobilePoll: React.FunctionComponent = () => {
                 className="flex-1"
                 data-testid="participant-selector"
               >
-                <SelectValue />
+                <SelectValue>
+                  {(val: string | null | undefined) => {
+                    if (!val || val === "all") {
+                      return (
+                        <div className="flex items-center gap-x-2">
+                          <UsersIcon className="size-4 shrink-0 text-muted-foreground" />
+                          <span>
+                            {selectedGroupId === "all"
+                              ? t("allParticipants", {
+                                  defaultValue: "All participants",
+                                })
+                              : `${availableGroups.find((g) => g.id === selectedGroupId)?.name ?? "Group"} (${filteredParticipants.length})`}
+                          </span>
+                        </div>
+                      );
+                    }
+                    const p = visibleParticipants.find((p) => p.id === val);
+                    if (!p) return val;
+                    return (
+                      <div className="flex items-center gap-x-2 truncate">
+                        <OptimizedAvatarImage
+                          name={p.name}
+                          src={p.image ?? undefined}
+                          size="sm"
+                        />
+                        <span className="truncate">{p.name}</span>
+                        {p.group?.name ? (
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 px-1 py-0 font-normal text-[10px]"
+                          >
+                            {p.group.name}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    );
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {participantOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-x-2.5">
+                    <UsersIcon className="size-4 shrink-0 text-muted-foreground" />
+                    <span>
+                      {selectedGroupId === "all"
+                        ? t("allParticipants", {
+                            defaultValue: "All participants",
+                          })
+                        : `All ${availableGroups.find((g) => g.id === selectedGroupId)?.name ?? ""} (${filteredParticipants.length})`}
+                    </span>
+                  </div>
+                </SelectItem>
+                <SelectSeparator />
+                {participantSections.map((section) => (
+                  <SelectGroup key={section.groupKey}>
+                    {participantSections.length > 1 ||
+                    section.groupKey !== "ungrouped" ? (
+                      <SelectLabel className="flex items-center gap-1.5 px-2 py-1 font-semibold text-primary text-xs">
+                        <UsersIcon className="size-3" />
+                        <span>{section.groupName}</span>
+                        <span className="font-normal text-muted-foreground">
+                          ({section.participants.length})
+                        </span>
+                      </SelectLabel>
+                    ) : null}
+                    {section.participants.map((participant) => (
+                      <SelectItem key={participant.id} value={participant.id}>
+                        <div className="flex items-center gap-2">
+                          <OptimizedAvatarImage
+                            name={participant.name}
+                            src={participant.image ?? undefined}
+                            size="sm"
+                          />
+                          <ParticipantName>{participant.name}</ParticipantName>
+                          {participant.group?.name ? (
+                            <Badge
+                              variant="outline"
+                              className="px-1 py-0 font-normal text-[10px]"
+                            >
+                              {participant.group.name}
+                            </Badge>
+                          ) : null}
+                          {session.ownsObject(participant) && (
+                            <Badge>
+                              <Trans i18nKey="you" defaults="You" />
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
               </SelectContent>
             </Select>

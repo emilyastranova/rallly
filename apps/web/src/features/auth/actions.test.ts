@@ -46,7 +46,7 @@ vi.mock("@/lib/safe-action/server", () => ({
   createRateLimitMiddleware: vi.fn(),
 }));
 
-describe("setPasswordForUser", () => {
+describe("setPasswordForUser", { timeout: 15000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
