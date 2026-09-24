@@ -14,8 +14,6 @@ import {
   removeBrandingLogoSchema,
   updateBrandingLogoSchema,
 } from "@/features/instance-settings/schema";
-import { getWhiteLabelAddon } from "@/features/licensing/data";
-import { AppError } from "@/lib/errors/app-error";
 import { adminActionClient } from "@/lib/safe-action/server";
 import {
   assertAssetKey,
@@ -23,14 +21,7 @@ import {
 } from "@/lib/storage/asset-upload";
 
 async function requireWhiteLabelAddon() {
-  const hasWhiteLabelAddon = await getWhiteLabelAddon();
-
-  if (!hasWhiteLabelAddon) {
-    throw new AppError({
-      code: "PAYMENT_REQUIRED",
-      message: "Custom branding requires the white label add-on.",
-    });
-  }
+  // In libre edition, instance branding is always available
 }
 
 export const updateBrandingSettingsAction = adminActionClient

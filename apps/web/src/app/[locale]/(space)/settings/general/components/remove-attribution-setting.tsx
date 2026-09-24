@@ -7,7 +7,6 @@ import {
   FieldLabel,
 } from "@rallly/ui/field";
 import { Switch } from "@rallly/ui/switch";
-import { ProBadge } from "@/features/billing/components/pro-badge";
 import { useHideAttributionToggle, useSpace } from "@/features/space/client";
 import { Trans } from "@/i18n/client";
 
@@ -30,7 +29,6 @@ export function RemoveAttributionSetting({
             i18nKey="removeAttributionSettingTitle"
             defaults="Remove attribution"
           />
-          {space.tier !== "pro" && <ProBadge />}
         </FieldLabel>
         <FieldDescription>
           <Trans

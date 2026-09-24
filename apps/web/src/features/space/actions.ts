@@ -174,22 +174,6 @@ export const updateSpaceAction = authActionClient
   .action(async ({ ctx, parsedInput }) => {
     const { space } = ctx;
 
-    if (parsedInput.primaryColor && space.tier !== "pro") {
-      throw new AppError({
-        code: "PAYMENT_REQUIRED",
-        message: "You need a Pro subscription to set a primary color",
-      });
-    }
-
-    const { spaceBrandingAllowed } = await getInstancePolicy();
-
-    if (parsedInput.primaryColor && !spaceBrandingAllowed) {
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "Space branding is managed by the instance administrator",
-      });
-    }
-
     await updateSpace({
       spaceId: space.id,
       name: parsedInput.name,
@@ -224,22 +208,6 @@ export const updateSpaceShowBrandingAction = authActionClient
   .action(async ({ ctx, parsedInput }) => {
     const { space } = ctx;
 
-    if (parsedInput.showBranding && space.tier !== "pro") {
-      throw new AppError({
-        code: "PAYMENT_REQUIRED",
-        message: "You need a Pro subscription to enable custom branding",
-      });
-    }
-
-    const { spaceBrandingAllowed } = await getInstancePolicy();
-
-    if (parsedInput.showBranding && !spaceBrandingAllowed) {
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "Space branding is managed by the instance administrator",
-      });
-    }
-
     await updateSpaceShowBranding({
       spaceId: space.id,
       showBranding: parsedInput.showBranding,
@@ -270,22 +238,6 @@ export const updateSpaceHideAttributionAction = authActionClient
   .inputSchema(updateSpaceHideAttributionSchema)
   .action(async ({ ctx, parsedInput }) => {
     const { space } = ctx;
-
-    const { spaceAttributionConfigurable } = await getInstancePolicy();
-
-    if (!spaceAttributionConfigurable) {
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "Attribution removal is not available on this instance",
-      });
-    }
-
-    if (parsedInput.hideAttribution && space.tier !== "pro") {
-      throw new AppError({
-        code: "PAYMENT_REQUIRED",
-        message: "You need a Pro subscription to remove attribution",
-      });
-    }
 
     await updateSpaceHideAttribution({
       spaceId: space.id,
@@ -323,13 +275,6 @@ export const updateSpaceSharedAction = authActionClient
       throw new AppError({
         code: "FORBIDDEN",
         message: "Spaces are always shared on this instance",
-      });
-    }
-
-    if (parsedInput.shared && space.tier !== "pro") {
-      throw new AppError({
-        code: "PAYMENT_REQUIRED",
-        message: "You need a Pro subscription to share a space",
       });
     }
 
