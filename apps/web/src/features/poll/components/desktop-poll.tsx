@@ -17,12 +17,14 @@ import {
   ArrowLeftRightIcon,
   ArrowRightIcon,
   CalendarIcon,
+  CheckIcon,
   ExpandIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
   ShrinkIcon,
   Users2Icon,
+  XIcon,
 } from "lucide-react";
 import * as React from "react";
 import { Controller } from "react-hook-form";
@@ -455,14 +457,53 @@ const DesktopPoll: React.FunctionComponent = () => {
                     type="button"
                     variant="default"
                     size="xs"
+                    aria-label={t("editYourVote", {
+                      defaultValue: "Edit your vote",
+                    })}
+                    title={t("editYourVote", {
+                      defaultValue: "Edit your vote",
+                    })}
                     onClick={() => {
                       votingForm.setEditingParticipantId(myParticipant.id);
                     }}
-                    className="ml-1 h-7 gap-1 px-2.5 text-xs font-medium"
+                    className="ml-1 h-7 w-7 p-0 text-xs font-medium sm:h-7 sm:w-auto sm:gap-1 sm:px-2.5"
                   >
-                    <PencilIcon className="size-3 text-muted-foreground" />
-                    <span>Edit your vote</span>
+                    <PencilIcon className="size-3.5 text-muted-foreground" />
+                    <span className="hidden sm:inline">Edit your vote</span>
                   </Button>
+                ) : null}
+                {mode !== "view" ? (
+                  <div className="ml-1 flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="xs"
+                      aria-label={t("save", { defaultValue: "Save" })}
+                      title={t("save", { defaultValue: "Save" })}
+                      onClick={() => {
+                        document
+                          .querySelector<HTMLFormElement>("#voting-form")
+                          ?.requestSubmit();
+                      }}
+                      className="h-7 w-7 p-0 text-xs font-medium sm:h-7 sm:w-auto sm:gap-1 sm:px-2.5"
+                    >
+                      <CheckIcon className="size-3.5" />
+                      <span className="hidden sm:inline">Save</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={t("cancel", { defaultValue: "Cancel" })}
+                      title={t("cancel", { defaultValue: "Cancel" })}
+                      onClick={() => {
+                        votingForm.cancel();
+                      }}
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  </div>
                 ) : null}
                 {canAddNewParticipant && mode !== "new" && !myParticipant ? (
                   <Button
