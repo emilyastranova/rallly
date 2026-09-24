@@ -43,7 +43,7 @@ const TimelineRow = ({
       {rowSpan > 0 ? (
         <th
           rowSpan={rowSpan}
-          style={{ minWidth: 235, width: 235, top }}
+          style={{ minWidth: 340, width: 340, top }}
           className={cn("sticky left-0 z-30 border-b bg-card px-4 py-2")}
         />
       ) : null}

@@ -324,7 +324,7 @@ const DesktopPoll: React.FunctionComponent = () => {
     setDidScroll(true);
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
-        left: scrollRef.current.scrollLeft + 235,
+        left: scrollRef.current.scrollLeft + 340,
         behavior: "smooth",
       });
     }
@@ -333,7 +333,7 @@ const DesktopPoll: React.FunctionComponent = () => {
   const goToPreviousPage = React.useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
-        left: scrollRef.current.scrollLeft - 235,
+        left: scrollRef.current.scrollLeft - 340,
         behavior: "smooth",
       });
     }
@@ -439,7 +439,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                   <div
                     aria-hidden="true"
                     className={cn(
-                      "pointer-events-none absolute top-0 bottom-3 left-[235px] z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
+                      "pointer-events-none absolute top-0 bottom-3 left-[340px] z-30 w-4 border-l bg-linear-to-r from-gray-800/5 via-transparent to-transparent transition-opacity",
                       x > 0 ? "opacity-100" : "opacity-0",
                     )}
                   />

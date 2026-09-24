@@ -94,7 +94,7 @@ export function InvitePage({
       <main
         id="main-content"
         tabIndex={-1}
-        className="mx-auto w-full max-w-4xl space-y-3"
+        className="mx-auto w-full max-w-[1600px] space-y-3"
       >
         <GoToApp />
         <EventCard />

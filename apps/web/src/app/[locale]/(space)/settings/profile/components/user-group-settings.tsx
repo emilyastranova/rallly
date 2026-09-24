@@ -99,8 +99,8 @@ export function UserGroupSettings({
           </div>
         ) : (
           <>
-            <div className="space-y-2">
-              <Label className="font-medium text-sm">Primary Group</Label>
+            <div className="flex flex-col gap-2.5">
+              <Label className="block font-medium text-sm">Primary Group</Label>
               <Select
                 value={primaryGroupId}
                 onValueChange={handlePrimaryChange}
@@ -127,8 +127,8 @@ export function UserGroupSettings({
               </Select>
             </div>
 
-            <div className="space-y-3">
-              <Label className="font-medium text-sm">
+            <div className="flex flex-col gap-2.5">
+              <Label className="block font-medium text-sm">
                 All Subteams / Groups You Belong To
               </Label>
               <div className="grid gap-2.5 sm:grid-cols-2">
