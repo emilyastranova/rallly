@@ -619,7 +619,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                     )}
                   >
                     {isAxesSwapped ? (
-                      <table className="w-full table-auto border-separate border-spacing-0">
+                      <table className="w-max min-w-full table-fixed border-separate border-spacing-0">
                         <thead>
                           {/* Topmost element: Horizontal bar over the participants in each subteam */}
                           <tr>
@@ -646,6 +646,11 @@ const DesktopPoll: React.FunctionComponent = () => {
                             </th>
                             <th
                               rowSpan={2}
+                              style={{
+                                minWidth: 48,
+                                maxWidth: 48,
+                                width: 48,
+                              }}
                               className="sticky top-0 z-30 h-44 w-12 min-w-12 max-w-12 select-none border-border border-b border-r bg-muted/60 p-0 text-center align-bottom"
                             >
                               <div className="flex h-full flex-col items-center justify-end pb-3">
@@ -657,14 +662,19 @@ const DesktopPoll: React.FunctionComponent = () => {
                             {mode === "new" ? (
                               <th
                                 rowSpan={2}
-                                className="sticky top-0 z-30 h-48 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-primary/50 border-b border-l bg-card p-0 align-bottom"
+                                style={{
+                                  minWidth: 56,
+                                  maxWidth: 56,
+                                  width: 56,
+                                }}
+                                className="sticky top-0 z-30 h-48 w-14 min-w-14 max-w-14 overflow-visible border-primary/50 border-b border-l bg-card p-0 align-bottom"
                               >
                                 <div className="relative h-full w-full overflow-visible">
                                   <div className="pointer-events-none absolute inset-0 bg-primary/5" />
                                   <div
                                     className="absolute bottom-3 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                     style={{
-                                      left: "14px",
+                                      left: "calc(50% - 12px)",
                                       transformOrigin: "12px 12px",
                                       transform: "rotate(-60deg)",
                                     }}
@@ -727,8 +737,13 @@ const DesktopPoll: React.FunctionComponent = () => {
                                     ref={
                                       isEditingThis ? editingColRef : undefined
                                     }
+                                    style={{
+                                      minWidth: 56,
+                                      maxWidth: 56,
+                                      width: 56,
+                                    }}
                                     className={cn(
-                                      "group/th sticky top-7 z-30 h-44 w-[52px] min-w-[52px] max-w-[52px] overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
+                                      "group/th sticky top-7 z-30 h-44 w-14 min-w-14 max-w-14 overflow-visible border-border border-b border-l bg-card p-0 align-bottom",
                                       isEditingThis &&
                                         "border-primary border-b-primary border-l-primary",
                                       canEdit &&
@@ -755,7 +770,7 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       <div
                                         className="absolute bottom-5 flex w-48 items-center gap-1.5 whitespace-nowrap text-left"
                                         style={{
-                                          left: "14px",
+                                          left: "calc(50% - 12px)",
                                           transformOrigin: "12px 12px",
                                           transform: "rotate(-60deg)",
                                         }}
@@ -898,7 +913,14 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       </div>
                                     </td>
 
-                                    <td className="h-12 w-12 min-w-12 max-w-12 border-border border-b border-r bg-muted/20 text-center">
+                                    <td
+                                      style={{
+                                        minWidth: 48,
+                                        maxWidth: 48,
+                                        width: 48,
+                                      }}
+                                      className="h-12 w-12 min-w-12 max-w-12 border-border border-b border-r bg-muted/20 text-center"
+                                    >
                                       <div className="flex items-center justify-center p-0.5">
                                         <ConnectedScoreSummary
                                           optionId={option.optionId}
@@ -910,7 +932,14 @@ const DesktopPoll: React.FunctionComponent = () => {
                                     </td>
 
                                     {mode === "new" ? (
-                                      <td className="h-12 w-[52px] min-w-[52px] max-w-[52px] border-primary/30 border-b border-l bg-primary/5 text-center">
+                                      <td
+                                        style={{
+                                          minWidth: 56,
+                                          maxWidth: 56,
+                                          width: 56,
+                                        }}
+                                        className="h-12 w-14 min-w-14 max-w-14 border-primary/30 border-b border-l bg-primary/5 text-center"
+                                      >
                                         <div className="flex items-center justify-center p-1">
                                           {voteIndex !== -1 ? (
                                             <Controller
@@ -949,7 +978,12 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       return isEditingThis ? (
                                         <td
                                           key={participant.id}
-                                          className="h-12 w-[52px] min-w-[52px] max-w-[52px] border-primary/30 border-b border-l bg-primary/5 text-center"
+                                          style={{
+                                            minWidth: 56,
+                                            maxWidth: 56,
+                                            width: 56,
+                                          }}
+                                          className="h-12 w-14 min-w-14 max-w-14 border-primary/30 border-b border-l bg-primary/5 text-center"
                                         >
                                           <div className="flex items-center justify-center p-1">
                                             {voteIndex !== -1 ? (
@@ -975,8 +1009,13 @@ const DesktopPoll: React.FunctionComponent = () => {
                                       ) : (
                                         <td
                                           key={participant.id}
+                                          style={{
+                                            minWidth: 56,
+                                            maxWidth: 56,
+                                            width: 56,
+                                          }}
                                           className={cn(
-                                            "h-12 w-[52px] min-w-[52px] max-w-[52px] border-border border-b border-l bg-card text-center transition-colors",
+                                            "h-12 w-14 min-w-14 max-w-14 border-border border-b border-l bg-card text-center transition-colors",
                                             canEdit &&
                                               mode === "view" &&
                                               "cursor-pointer hover:bg-muted/40",
